@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from git import Repo, Remote, RemoteReference
 from git.util import IterableList
 
@@ -26,17 +27,18 @@ class Repository:
 
     @property
     def main(self) -> RemoteReference:
-        return self.repo.heads[self.settings.gitflow.main]
+        return self.repo.heads[self.settings.main]
 
     @property
     def dev(self) -> RemoteReference:
-        return self.repo.heads[self.settings.gitflow.dev]
+        return self.repo.heads[self.settings.dev]
 
-    def apply(self, visitor):
-        return visitor.visit(self)
+    def apply(self, visitor, *args, **kwargs):
+        return visitor.visit(self, *args, **kwargs)
 
 
-class RepositoryVisitor:
+class RepositoryVisitor(ABC):
 
-    def visit(self, repo: Repository):
+    @abstractmethod
+    def visit(self, repo: Repository, *args, **kwargs):
         pass

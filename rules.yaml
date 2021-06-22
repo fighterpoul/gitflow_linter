@@ -1,0 +1,19 @@
+branches:
+  main: master
+  dev: develop
+  features: feature
+  fixes: bugfix
+  releases: release
+  hotfixes: hotfix
+  others:
+    - spike
+    - test
+
+rules:
+  single_master_and_develop:
+  no_old_development_branches:
+    max_days_features: 50
+  no_orphan_branches:
+  master_must_have_tags:
+  version_names_follow_convention:
+    version_regex: ^\d+\.\d+(\.\d+)?$
