@@ -19,3 +19,5 @@ rules:
     version_regex: ^\d+\.\d+(\.\d+)?$
   no_dead_releases:
     deadline_to_close_release: 30
+  no_dependant_features:
+    max_dependant_branches: 0

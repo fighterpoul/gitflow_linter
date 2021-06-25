@@ -201,7 +201,7 @@ class VersionNamesConventionVisitor(BaseVisitor):
                                                           'convention: {}'.format(
                 os.linesep.join(release_issues)) + os.linesep
             message += '' if len(
-                tags_issues) <= 0 else 'Following tags do not follow version name convention:'\
+                tags_issues) <= 0 else 'Following tags do not follow version name convention:' \
                                        + os.linesep \
                                        + os.linesep.join(tags_issues)
             raise Exception(message)
@@ -233,6 +233,38 @@ class DeadReleasesVisitor(BaseVisitor):
             raise Exception(message)
 
 
+class DependantFeaturesVisitor(BaseVisitor):
+    @property
+    def rule(self) -> str:
+        return 'no_dependant_features'
+
+    @arguments_checker(['max_dependant_branches'])
+    def visit(self, repo: Repository, *args, **kwargs):
+        dev_branch = '{}/{}'.format(repo.remote.name, self.settings.dev)
+        max_dependant_branches = int(kwargs['max_dependant_branches'])
+        merged_branches = [branch.strip() for branch in
+                           repo.repo.git.branch('-r', '--merged', repo.dev.name).split(os.linesep)]
+        not_merged = [repo.branch(b.name) for b in repo.branches(self.settings.features) if
+                      b.name not in merged_branches]
+        issues = []
+        branch_issue_format = 'Branch {} seems to depend on other feature branches. It contains following merges: ' + os.linesep + '{}'
+
+        for feature in not_merged:
+            name = feature.name
+            merge_commits_query = repo.repo.git.log('{}..{}'.format(dev_branch, name), '--merges', '--first-parent',
+                                                    '--format=format:%H').split(os.linesep)
+            merge_commits_sha = [commit_sha.strip() for commit_sha in merge_commits_query]
+            merge_commits_in_feature = [commit for commit in repo.repo.iter_commits(name, max_count=200) if
+                                        commit.hexsha in merge_commits_sha]
+            branch_issues = [commit for commit in merge_commits_in_feature if self.settings.dev not in commit.message]
+            if len(branch_issues) > max_dependant_branches:
+                issues.append(branch_issue_format.format(name, os.linesep.join(
+                    [next(iter(commit.message.split(os.linesep)), None) for commit in branch_issues])))
+
+        if issues:
+            raise Exception(os.linesep.join(issues))
+
+
 def visitors(settings: dict):
     return [
         SingleBranchesVisitor(settings=settings),
@@ -241,4 +273,5 @@ def visitors(settings: dict):
         MainCommitsAreTaggedVisitor(settings=settings),
         VersionNamesConventionVisitor(settings=settings),
         DeadReleasesVisitor(settings=settings),
+        DependantFeaturesVisitor(settings=settings),
     ]
