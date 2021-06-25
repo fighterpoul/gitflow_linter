@@ -25,6 +25,10 @@ class Repository:
         path = None if folder is None else '{}/{}'.format(self.remote.name, folder)
         return self.remote.refs if path is None else [r for r in self.remote.refs if path in r.name]
 
+    def branch(self, name: str = None) -> RemoteReference:
+        path = name if '/' in name else '{}/{}'.format(self.remote.name, name)
+        return next(iter([r for r in self.remote.refs if r.name.startswith(path)]), None)
+
     @property
     def main(self) -> RemoteReference:
         return self.repo.heads[self.settings.main]

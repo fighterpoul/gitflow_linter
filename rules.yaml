@@ -17,3 +17,5 @@ rules:
   master_must_have_tags:
   version_names_follow_convention:
     version_regex: ^\d+\.\d+(\.\d+)?$
+  no_dead_releases:
+    deadline_to_close_release: 30

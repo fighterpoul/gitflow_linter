@@ -19,7 +19,9 @@ def arguments_checker(keywords):
                 raise ValueError(
                     "Following arguments are missing: {}".format(', '.join(keywords)))
             return f(*args, **kw)
+
         return new_function
+
     return wrap
 
 
@@ -167,8 +169,9 @@ class MainCommitsAreTaggedVisitor(BaseVisitor):
             return os.linesep.join([sha[:7] for sha in shas])
 
         if len(main_commits_not_tagged) > 0:
-            raise Exception('Following commits from master branch are not tagged: {}'
-                            .format(_shorten(main_commits_not_tagged)))
+            raise Exception('Following commits from master branch are not tagged:'
+                            + os.linesep
+                            + _shorten(main_commits_not_tagged))
 
         if len(tags_not_on_main_branch) > 0:
             return 'Following tags were not added on the main branch: {}'.format(_shorten(tags_not_on_main_branch))
@@ -195,10 +198,38 @@ class VersionNamesConventionVisitor(BaseVisitor):
 
         if len(release_issues) > 0 or len(tags_issues) > 0:
             message = '' if len(release_issues) <= 0 else 'Following releases do not follow version name ' \
-                                                          'convention: {}'.format(os.linesep.join(release_issues)) + os.linesep
+                                                          'convention: {}'.format(
+                os.linesep.join(release_issues)) + os.linesep
             message += '' if len(
-                tags_issues) <= 0 else 'Following tags do not follow version name convention: {}'.format(
-                os.linesep.join(tags_issues))
+                tags_issues) <= 0 else 'Following tags do not follow version name convention:'\
+                                       + os.linesep \
+                                       + os.linesep.join(tags_issues)
+            raise Exception(message)
+
+
+class DeadReleasesVisitor(BaseVisitor):
+
+    @property
+    def rule(self) -> str:
+        return 'no_dead_releases'
+
+    @arguments_checker(['deadline_to_close_release'])
+    def visit(self, repo: Repository, *args, **kwargs):
+        deadline = datetime.now() - timedelta(days=kwargs['deadline_to_close_release'])
+        main_branch = '{}/{}'.format(repo.remote.name, self.settings.main)
+        release_branch = '{}/{}/'.format(repo.remote.name, self.settings.releases)
+
+        query_for_not_merged_to_main = [r.strip() for r in
+                                        repo.repo.git.branch('-r', '--no-merged', main_branch).split(os.linesep)]
+        potential_dead_releases = [repo.branch(release) for release in query_for_not_merged_to_main if
+                                   release.strip().startswith(release_branch)]
+        dead_releases = [dead_release for dead_release in potential_dead_releases if
+                         deadline > dead_release.commit.authored_datetime.replace(tzinfo=None)]
+
+        if len(dead_releases) > 0:
+            message = 'Following releases look like abandoned - they have never been merged to the main branch:' \
+                      + os.linesep \
+                      + os.linesep.join([r.name for r in dead_releases])
             raise Exception(message)
 
 
@@ -209,4 +240,5 @@ def visitors(settings: dict):
         NotScopedBranchesVisitor(settings=settings),
         MainCommitsAreTaggedVisitor(settings=settings),
         VersionNamesConventionVisitor(settings=settings),
+        DeadReleasesVisitor(settings=settings),
     ]
