@@ -1,5 +1,4 @@
 import sys
-import logging
 import os
 
 # GitPython, click, pyyaml
@@ -10,11 +9,6 @@ import yaml
 import output
 from report import Report, Section, Issue
 from visitor import StatsRepositoryVisitor
-
-FORMAT = '%(message)s'
-logging.basicConfig(format=FORMAT)
-log = logging.getLogger()
-log.setLevel(logging.INFO)
 
 _DEFAULT_LINTER_OPTIONS = 'gitflow_linter.yaml'
 
@@ -34,8 +28,10 @@ def _validate_settings(value, working_dir):
 @click.argument('git_directory',
                 type=click.Path(exists=True, file_okay=False, dir_okay=True, readable=True, resolve_path=True,
                                 allow_dash=False, path_type=None))
-@click.option('--settings', type=click.File(mode='r', encoding=None, errors='strict', lazy=None, atomic=False))
-def main(git_directory, settings):
+@click.option('-s', '--settings', type=click.File(mode='r', encoding=None, errors='strict', lazy=None, atomic=False))
+@click.option('-o', '--output', 'out',
+              type=click.Choice(output.outputs.keys(), case_sensitive=False), default=next(iter(output.outputs.keys())))
+def main(git_directory, settings, out):
     """Evaluate given repository and check if gitflow is respected"""
     try:
         from repository import Repository
@@ -59,10 +55,10 @@ def main(git_directory, settings):
                 error_section = Section(rule=visitor.rule, title='ERROR!')
                 error_section.append(Issue.error('💀 Cannot be checked because of error: {err}'.format(err=err)))
                 report.append(error_section)
-        output.create_output('console')(report)
+        output.create_output(out)(report)
         return sys.exit(1 if report.contains_errors(are_warnings_errors=False) else 0)
     except BaseException as err:
-        log.error(err)
+        output.log.error(err)
         return sys.exit(1)
 
 

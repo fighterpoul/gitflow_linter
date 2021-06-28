@@ -1,6 +1,11 @@
+import logging
 from os import linesep
-from main import log
 from report import Report, Section
+
+FORMAT = '%(message)s'
+logging.basicConfig(format=FORMAT)
+log = logging.getLogger()
+log.setLevel(logging.INFO)
 
 
 def _console_output(report: Report):
@@ -30,8 +35,29 @@ def _console_output(report: Report):
                 log.log(issue.level.to_log_level, '\t\t- ' + issue.description)
 
 
+def _json_output(report: Report):
+    import json
+    log.info(json.dumps({
+        'repository': report.working_dir,
+        'statistics': report.stats,
+        'sections': [
+            {
+                'rule': section.rule,
+                'title': section.title,
+                'issues': [
+                    {
+                        'level': issue.level,
+                        'description': issue.description,
+                    } for issue in section.issues
+                ]
+            } for section in report.sections
+        ]
+    }, indent=2))
+
+
 outputs = {
-    'console': _console_output
+    'console': _console_output,
+    'json': _json_output,
 }
 
 

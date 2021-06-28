@@ -3,7 +3,7 @@ from enum import Enum, unique
 
 
 @unique
-class Level(Enum):
+class Level(str, Enum):
     INFO = 'info'
     WARNING = 'warning'
     ERROR = 'error'
