@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from git import Repo, Remote, RemoteReference, Head
+
+from git import Repo, Remote, RemoteReference
 from git.util import IterableList
 
 

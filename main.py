@@ -7,6 +7,10 @@ import click
 from git import Repo
 import yaml
 
+import output
+from report import Report, Section, Issue
+from visitor import StatsRepositoryVisitor
+
 FORMAT = '%(message)s'
 logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
@@ -31,8 +35,7 @@ def _validate_settings(value, working_dir):
                 type=click.Path(exists=True, file_okay=False, dir_okay=True, readable=True, resolve_path=True,
                                 allow_dash=False, path_type=None))
 @click.option('--settings', type=click.File(mode='r', encoding=None, errors='strict', lazy=None, atomic=False))
-@click.option('--stats/--no-stats', default=False)
-def main(git_directory, settings, stats):
+def main(git_directory, settings):
     """Evaluate given repository and check if gitflow is respected"""
     try:
         from repository import Repository
@@ -43,32 +46,25 @@ def main(git_directory, settings, stats):
         gitflow = Gitflow(settings=yaml_settings)
         repo = Repository(Repo(git_directory), settings=gitflow)
         rules = RulesContainer(rules=yaml_settings)
+        report = Report(working_dir=git_directory, stats=repo.apply(StatsRepositoryVisitor(settings=gitflow)), sections=[])
 
-        log.debug('Working on git repository: {}'.format(git_directory))
-
-        if stats:
-            from visitor import StatsRepositoryVisitor
-            log.info(repo.apply(StatsRepositoryVisitor(settings=gitflow)))
-            return 0
-
-        issues = []
         visitors = [visitor for visitor in visitor.visitors(settings=gitflow) if visitor.rule in rules.rules]
         for visitor in visitors:
             try:
                 kwargs = rules.args_for(visitor.rule)
-                result = repo.apply(visitor, **kwargs if kwargs else {})
-                if result is not None:
-                    log.info(result)
+                section: Section = repo.apply(visitor, **kwargs if kwargs else {})
+                if section is not None:
+                    report.append(section)
             except BaseException as err:
-                issues.append(err)
-        if len(issues) > 0:
-            log.error((os.linesep + os.linesep).join([str(issue) for issue in issues]))
+                error_section = Section(rule=visitor.rule, title='ERROR!')
+                error_section.append(Issue.error('💀 Cannot be checked because of error: {err}'.format(err=err)))
+                report.append(error_section)
+        output.create_output('console')(report)
+        return sys.exit(1 if report.contains_errors(are_warnings_errors=False) else 0)
     except BaseException as err:
         log.error(err)
-        return 1
-    else:
-        return 0
+        return sys.exit(1)
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    main()
