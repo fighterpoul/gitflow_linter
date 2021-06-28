@@ -5,6 +5,7 @@ import os
 from git import Head
 from git.util import IterableList
 
+from report import Section, Issue, Level
 from repository import Repository, RepositoryVisitor
 
 from functools import wraps
@@ -36,13 +37,12 @@ class BaseVisitor(RepositoryVisitor, ABC):
         self.settings = settings
 
 
-class StatsRepositoryVisitor(BaseVisitor):
+class StatsRepositoryVisitor(RepositoryVisitor):
 
-    @property
-    def rule(self) -> str:
-        pass
+    def __init__(self, settings: dict):
+        self.settings = settings
 
-    def visit(self, repo: Repository):
+    def visit(self, repo: Repository, **kwargs):
         def names(branches: IterableList):
             return [b.name for b in branches]
 
@@ -72,16 +72,16 @@ class SingleBranchesVisitor(BaseVisitor):
     def rule(self) -> str:
         return 'single_master_and_develop'
 
-    def visit(self, repo: Repository, **kwargs):
-        issues = []
+    def visit(self, repo: Repository, **kwargs) -> Section:
+        section = Section(rule=self.rule, title='Checked if repo contains single release history branch and single '
+                                                'integration branch')
         # TODO add more smart checking
         if len(repo.branches(folder=self.settings.main)) > 1:
-            issues.append('Repository contains more than one main branch')
+            section.append(Issue.error('Repository contains more than one main branch'))
         if len(repo.branches(folder=self.settings.dev)) > 1:
-            issues.append('Repository contains more than one dev branch')
+            section.append(Issue.error('Repository contains more than one dev branch'))
 
-        if len(issues) > 0:
-            raise Exception(', '.join(issues))
+        return section
 
 
 class OldDevelopmentBranchesVisitor(BaseVisitor):
@@ -91,8 +91,8 @@ class OldDevelopmentBranchesVisitor(BaseVisitor):
         return 'no_old_development_branches'
 
     @arguments_checker(['max_days_features'])
-    def visit(self, repo: Repository, **kwargs):
-        issues = []
+    def visit(self, repo: Repository, **kwargs) -> Section:
+        section = Section(rule=self.rule, title='Checked if repo contains abandoned feature branches')
         deadline = datetime.now() - timedelta(days=kwargs['max_days_features'])
         merged_branches = [branch.strip() for branch in
                            repo.repo.git.branch('-r', '--merged', repo.dev.name).split(os.linesep)]
@@ -101,15 +101,14 @@ class OldDevelopmentBranchesVisitor(BaseVisitor):
             for branch in branches:
                 if deadline > branch.commit.authored_datetime.replace(tzinfo=None) \
                         and branch.name not in merged_branches:
-                    issues.append(
+                    section.append(Issue.error(
                         '{} {} has not been touched since {}'.format(name, branch.name,
-                                                                     branch.commit.authored_datetime))
+                                                                     branch.commit.authored_datetime)))
 
         _check_for_issues(branches=repo.branches(folder=self.settings.features), name='Feature')
         _check_for_issues(branches=repo.branches(folder=self.settings.fixes), name='Fix')
 
-        if len(issues) > 0:
-            raise Exception(os.linesep.join(issues))
+        return section
 
 
 class NotScopedBranchesVisitor(BaseVisitor):
@@ -118,7 +117,9 @@ class NotScopedBranchesVisitor(BaseVisitor):
     def rule(self) -> str:
         return 'no_orphan_branches'
 
-    def visit(self, repo: Repository, **kwargs):
+    def visit(self, repo: Repository, **kwargs) -> Section:
+        section = Section(rule=self.rule, title='Checked if repo contains orphan branches (created out of expected '
+                                                'folders)')
         expected_prefix_template = '{remote}/{branch}'
         expected_prefixes = [
                                 expected_prefix_template.format(remote=repo.remote.name, branch='HEAD'),
@@ -143,10 +144,11 @@ class NotScopedBranchesVisitor(BaseVisitor):
                     return True
             return False
 
-        orphan_branches = [branch.name for branch in repo.branches() if not has_expected_prefix(branch=branch)]
-        if len(orphan_branches) > 0:
-            raise Exception('Following branches look like orphans, namely they exist out of expected folders:\n{}'
-                            .format(os.linesep.join(orphan_branches)))
+        orphan_branches = [branch for branch in repo.branches() if not has_expected_prefix(branch=branch)]
+        for branch in orphan_branches:
+            section.append(Issue.error('{branch} looks like created out of expected scopes'.format(branch=branch.name)))
+
+        return section
 
 
 class MainCommitsAreTaggedVisitor(BaseVisitor):
@@ -155,7 +157,8 @@ class MainCommitsAreTaggedVisitor(BaseVisitor):
     def rule(self) -> str:
         return 'master_must_have_tags'
 
-    def visit(self, repo: Repository, **kwargs):
+    def visit(self, repo: Repository, **kwargs) -> Section:
+        section = Section(rule=self.rule, title='Checked if main repo branch has tagged commits')
         main_branch = '{}/{}'.format(repo.remote.name, self.settings.main)
         query_for_main_commits = repo.repo.git.log(main_branch, '--merges', '--format=format:%H', '--first-parent') \
             .split(os.linesep)
@@ -165,16 +168,15 @@ class MainCommitsAreTaggedVisitor(BaseVisitor):
         tags_not_on_main_branch = [sha for sha in tags_sha if sha not in main_commits]
         main_commits_not_tagged = [commit for commit in main_commits if commit not in tags_sha]
 
-        def _shorten(shas) -> str:
-            return os.linesep.join([sha[:7] for sha in shas])
+        for main_commit_not_tagged in main_commits_not_tagged:
+            section.append(Issue.error('{commit} commit in main branch is not tagged'
+                                       .format(commit=main_commit_not_tagged[:8])))
 
-        if len(main_commits_not_tagged) > 0:
-            raise Exception('Following commits from master branch are not tagged:'
-                            + os.linesep
-                            + _shorten(main_commits_not_tagged))
+        for tag_not_on_main in tags_not_on_main_branch:
+            section.append(Issue.warning('{commit} commit contains a tag but is not a part of the main branch'
+                                         .format(commit=tag_not_on_main[:8])))
 
-        if len(tags_not_on_main_branch) > 0:
-            return 'Following tags were not added on the main branch: {}'.format(_shorten(tags_not_on_main_branch))
+        return section
 
 
 class VersionNamesConventionVisitor(BaseVisitor):
@@ -184,8 +186,9 @@ class VersionNamesConventionVisitor(BaseVisitor):
         return 'version_names_follow_convention'
 
     @arguments_checker(['version_regex'])
-    def visit(self, repo: Repository, *args, **kwargs):
+    def visit(self, repo: Repository, *args, **kwargs) -> Section:
         import re
+        section = Section(rule=self.rule, title='Checked if version names follow given convention')
         releases = [branch.name for branch in repo.branches(self.settings.releases)]
         tags = [tag.name for tag in repo.repo.tags]
         version_reg = kwargs['version_regex']
@@ -196,15 +199,10 @@ class VersionNamesConventionVisitor(BaseVisitor):
         release_issues = [release for release in releases if not _validate_version(release.split('/')[-1])]
         tags_issues = [tag for tag in tags if not _validate_version(tag)]
 
-        if len(release_issues) > 0 or len(tags_issues) > 0:
-            message = '' if len(release_issues) <= 0 else 'Following releases do not follow version name ' \
-                                                          'convention: {}'.format(
-                os.linesep.join(release_issues)) + os.linesep
-            message += '' if len(
-                tags_issues) <= 0 else 'Following tags do not follow version name convention:' \
-                                       + os.linesep \
-                                       + os.linesep.join(tags_issues)
-            raise Exception(message)
+        section.extend([Issue.error('Release {branch} does not follow name convention'.format(branch=release)) for release in release_issues])
+        section.extend([Issue.error('Tag {tag} does not follow name convention'.format(tag=tag)) for tag in tags_issues])
+
+        return section
 
 
 class DeadReleasesVisitor(BaseVisitor):
@@ -214,7 +212,8 @@ class DeadReleasesVisitor(BaseVisitor):
         return 'no_dead_releases'
 
     @arguments_checker(['deadline_to_close_release'])
-    def visit(self, repo: Repository, *args, **kwargs):
+    def visit(self, repo: Repository, *args, **kwargs) -> Section:
+        section = Section(rule=self.rule, title='Checked if repo contains abandoned and not removed releases')
         deadline = datetime.now() - timedelta(days=kwargs['deadline_to_close_release'])
         main_branch = '{}/{}'.format(repo.remote.name, self.settings.main)
         release_branch = '{}/{}/'.format(repo.remote.name, self.settings.releases)
@@ -226,11 +225,9 @@ class DeadReleasesVisitor(BaseVisitor):
         dead_releases = [dead_release for dead_release in potential_dead_releases if
                          deadline > dead_release.commit.authored_datetime.replace(tzinfo=None)]
 
-        if len(dead_releases) > 0:
-            message = 'Following releases look like abandoned - they have never been merged to the main branch:' \
-                      + os.linesep \
-                      + os.linesep.join([r.name for r in dead_releases])
-            raise Exception(message)
+        section.extend([Issue.error('{release} seems abandoned - it has never been merged into the main branch'.format(release=r.name)) for r in dead_releases])
+
+        return section
 
 
 class DependantFeaturesVisitor(BaseVisitor):
@@ -239,15 +236,15 @@ class DependantFeaturesVisitor(BaseVisitor):
         return 'no_dependant_features'
 
     @arguments_checker(['max_dependant_branches'])
-    def visit(self, repo: Repository, *args, **kwargs):
+    def visit(self, repo: Repository, *args, **kwargs) -> Section:
+        section = Section(rule=self.rule, title='Checked if repo contains dependant feature branches')
         dev_branch = '{}/{}'.format(repo.remote.name, self.settings.dev)
         max_dependant_branches = int(kwargs['max_dependant_branches'])
         merged_branches = [branch.strip() for branch in
                            repo.repo.git.branch('-r', '--merged', repo.dev.name).split(os.linesep)]
         not_merged = [repo.branch(b.name) for b in repo.branches(self.settings.features) if
                       b.name not in merged_branches]
-        issues = []
-        branch_issue_format = 'Branch {} seems to depend on other feature branches. It contains following merges: ' + os.linesep + '{}'
+        branch_issue_format = '{} seems to depend on other feature branches. It contains following merges: ' + os.linesep + '{}'
 
         for feature in not_merged:
             name = feature.name
@@ -257,12 +254,15 @@ class DependantFeaturesVisitor(BaseVisitor):
             merge_commits_in_feature = [commit for commit in repo.repo.iter_commits(name, max_count=200) if
                                         commit.hexsha in merge_commits_sha]
             branch_issues = [commit for commit in merge_commits_in_feature if self.settings.dev not in commit.message]
-            if len(branch_issues) > max_dependant_branches:
-                issues.append(branch_issue_format.format(name, os.linesep.join(
-                    [next(iter(commit.message.split(os.linesep)), None) for commit in branch_issues])))
 
-        if issues:
-            raise Exception(os.linesep.join(issues))
+            if branch_issues:
+                is_limit_exceeded = len(branch_issues) > max_dependant_branches
+                issue_level = Level.ERROR if is_limit_exceeded else Level.WARNING
+                issues_titles = [next(iter(commit.message.split(os.linesep)), None) for commit in branch_issues]
+                issue_desc = branch_issue_format.format(name, os.linesep.join(issues_titles))
+                section.append(Issue(level=issue_level, description=issue_desc))
+
+        return section
 
 
 def visitors(settings: dict):
