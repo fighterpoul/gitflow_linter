@@ -1,6 +1,3 @@
-import yaml
-
-
 class AttributeDict(dict):
     __slots__ = ()
     __getattr__ = dict.__getitem__
@@ -46,3 +43,6 @@ class RulesContainer:
 
     def args_for(self, rule) -> dict:
         return self._rules.get(rule, {})
+
+    def consume(self, rule: str):
+        del self._rules[rule]

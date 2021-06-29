@@ -1,6 +1,6 @@
 import logging
 from os import linesep
-from report import Report, Section
+from gitflow_linter.report import Report, Section
 
 FORMAT = '%(message)s'
 logging.basicConfig(format=FORMAT)

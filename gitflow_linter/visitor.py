@@ -5,8 +5,8 @@ import os
 from git import Head
 from git.util import IterableList
 
-from report import Section, Issue, Level
-from repository import Repository, RepositoryVisitor
+from gitflow_linter.report import Section, Issue, Level
+from gitflow_linter.repository import Repository, RepositoryVisitor
 
 from functools import wraps
 

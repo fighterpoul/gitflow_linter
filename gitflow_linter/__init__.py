@@ -1,3 +1,5 @@
+import importlib
+import pkgutil
 import sys
 import os
 
@@ -6,11 +8,19 @@ import click
 from git import Repo
 import yaml
 
-import output
-from report import Report, Section, Issue
-from visitor import StatsRepositoryVisitor
+from gitflow_linter import output
 
 _DEFAULT_LINTER_OPTIONS = 'gitflow_linter.yaml'
+__version__ = '0.0.1'
+
+__discovered_plugins = {
+    name: importlib.import_module(name)
+    for finder, name, ispkg
+    in pkgutil.iter_modules()
+    if name.startswith('gitflow_linter_')
+}
+
+__available_plugins = __discovered_plugins.keys()
 
 
 def _validate_settings(value, working_dir):
@@ -33,10 +43,13 @@ def _validate_settings(value, working_dir):
               type=click.Choice(output.outputs.keys(), case_sensitive=False), default=next(iter(output.outputs.keys())))
 def main(git_directory, settings, out):
     """Evaluate given repository and check if gitflow is respected"""
+    from gitflow_linter.report import Report, Section, Issue
+    from gitflow_linter.visitor import StatsRepositoryVisitor
+    from gitflow_linter.repository import Repository
+    from gitflow_linter import visitor
+    from gitflow_linter.rules import RulesContainer, Gitflow
+
     try:
-        from repository import Repository
-        import visitor
-        from rules import RulesContainer, Gitflow
         settings = _validate_settings(settings, working_dir=git_directory)
         yaml_settings = yaml.load(settings, Loader=yaml.SafeLoader)
         gitflow = Gitflow(settings=yaml_settings)
@@ -55,11 +68,28 @@ def main(git_directory, settings, out):
                 error_section = Section(rule=visitor.rule, title='ERROR!')
                 error_section.append(Issue.error('💀 Cannot be checked because of error: {err}'.format(err=err)))
                 report.append(error_section)
+            finally:
+                rules.consume(visitor.rule)
+
+        if rules.rules:
+            output.log.warning('Some of rules cannot be validated because corresponding validators could not be found: '
+                               + ', '.join(rules.rules))
         output.create_output(out)(report)
         return sys.exit(1 if report.contains_errors(are_warnings_errors=False) else 0)
     except BaseException as err:
         output.log.error(err)
         return sys.exit(1)
+
+
+@click.command()
+def plugins():
+    output.log.info(', '.join(sorted(__available_plugins)))
+    output.log.info('Available gitflow-linter plugins:')
+    if not __available_plugins:
+        output.log.info('No plugins found.')
+    for plugin in __available_plugins:
+        output.log.info('- {plugin} handles rule {rule}'.format(plugin=plugin, rule=__discovered_plugins[plugin].visitor.rule))
+    return sys.exit(0)
 
 
 if __name__ == '__main__':
