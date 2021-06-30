@@ -1,0 +1,8 @@
+Usage: gitflow-linter [OPTIONS] GIT_DIRECTORY
+
+  Evaluate given repository and check if gitflow is respected
+
+Options:
+  -s, --settings FILENAME
+  -o, --output [console|json]
+  --help                       Show this message and exit.

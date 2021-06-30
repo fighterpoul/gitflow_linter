@@ -27,6 +27,11 @@ def arguments_checker(keywords):
 
 
 class BaseVisitor(RepositoryVisitor, ABC):
+    """
+    Abstract class describing how gitflow-linter works. A visitor must provide a rule that it is supposed to verify.
+    The linter will let the visitor visit a repository only if user wants to check the repository against the rule.
+    Plugins can override default visitors returning the same rule as a visitor they wish override.
+    """
 
     @property
     @abstractmethod
@@ -67,6 +72,8 @@ class StatsRepositoryVisitor(RepositoryVisitor):
 
 
 class SingleBranchesVisitor(BaseVisitor):
+    __doc__ = """gitflow strongly relies on the fact that there is only one branch for keeping the release history 
+    and only one integration branch """
 
     @property
     def rule(self) -> str:
@@ -85,6 +92,9 @@ class SingleBranchesVisitor(BaseVisitor):
 
 
 class OldDevelopmentBranchesVisitor(BaseVisitor):
+    __doc__ = """having old feature or bugfix branches may create a mess in the repository
+    
+    use ``max_days_features`` option to configure what 'old' means for you"""
 
     @property
     def rule(self) -> str:
@@ -112,6 +122,8 @@ class OldDevelopmentBranchesVisitor(BaseVisitor):
 
 
 class NotScopedBranchesVisitor(BaseVisitor):
+    __doc__ = """having branches that are out of configured folders (eg. created out of feature/, bugfix/) may be an 
+    indicator that you do something wrong and create a mess in the repo"""
 
     @property
     def rule(self) -> str:
@@ -152,6 +164,8 @@ class NotScopedBranchesVisitor(BaseVisitor):
 
 
 class MainCommitsAreTaggedVisitor(BaseVisitor):
+    __doc__ = """if your master branch contains commits that are not tagged, it probably means that you don't use 
+    master as your releases history keeper"""
 
     @property
     def rule(self) -> str:
@@ -180,6 +194,9 @@ class MainCommitsAreTaggedVisitor(BaseVisitor):
 
 
 class VersionNamesConventionVisitor(BaseVisitor):
+    __doc__ = """checks if release branches and tags follow version naming convention
+    
+    the convention must be specified in ``version_regex`` argument as a regular expression string"""
 
     @property
     def rule(self) -> str:
@@ -199,13 +216,21 @@ class VersionNamesConventionVisitor(BaseVisitor):
         release_issues = [release for release in releases if not _validate_version(release.split('/')[-1])]
         tags_issues = [tag for tag in tags if not _validate_version(tag)]
 
-        section.extend([Issue.error('Release {branch} does not follow name convention'.format(branch=release)) for release in release_issues])
-        section.extend([Issue.error('Tag {tag} does not follow name convention'.format(tag=tag)) for tag in tags_issues])
+        section.extend(
+            [Issue.error('Release {branch} does not follow name convention'.format(branch=release)) for release in
+             release_issues])
+        section.extend(
+            [Issue.error('Tag {tag} does not follow name convention'.format(tag=tag)) for tag in tags_issues])
 
         return section
 
 
 class DeadReleasesVisitor(BaseVisitor):
+    __doc__ = """release branches that are not closed may create a mess in the repository and breaks the master/main 
+    branch - releases must be closed as soon as they are deployed to production environment (or just before, 
+    depending on your case)
+    
+    configure how long releases are supposed to be maintained by using ``deadline_to_close_release`` (number of days)"""
 
     @property
     def rule(self) -> str:
@@ -213,6 +238,7 @@ class DeadReleasesVisitor(BaseVisitor):
 
     @arguments_checker(['deadline_to_close_release'])
     def visit(self, repo: Repository, *args, **kwargs) -> Section:
+        # TODO check hotfixes as well
         section = Section(rule=self.rule, title='Checked if repo contains abandoned and not removed releases')
         deadline = datetime.now() - timedelta(days=kwargs['deadline_to_close_release'])
         main_branch = '{}/{}'.format(repo.remote.name, self.settings.main)
@@ -225,12 +251,20 @@ class DeadReleasesVisitor(BaseVisitor):
         dead_releases = [dead_release for dead_release in potential_dead_releases if
                          deadline > dead_release.commit.authored_datetime.replace(tzinfo=None)]
 
-        section.extend([Issue.error('{release} seems abandoned - it has never been merged into the main branch'.format(release=r.name)) for r in dead_releases])
+        section.extend([Issue.error(
+            '{release} seems abandoned - it has never been merged into the main branch'.format(release=r.name)) for r in
+                        dead_releases])
 
         return section
 
 
 class DependantFeaturesVisitor(BaseVisitor):
+    __doc__ = """creating feature/bugfix branches one from another or merging them together before merging to develop 
+    may result in ugly issues during code review and merge mistakes 
+    
+    creating such a feature/merge is sometimes inevitable, you must configure the limit of such branches by using 
+    ``max_dependant_branches`` option """
+
     @property
     def rule(self) -> str:
         return 'no_dependant_features'

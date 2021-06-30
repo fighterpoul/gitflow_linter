@@ -10,7 +10,7 @@ import yaml
 
 from gitflow_linter import output
 
-_DEFAULT_LINTER_OPTIONS = 'gitflow_linter.yaml'
+DEFAULT_LINTER_OPTIONS = 'gitflow_linter.yaml'
 __version__ = '0.0.1'
 
 __discovered_plugins = {
@@ -27,10 +27,10 @@ def _validate_settings(value, working_dir):
     if value:
         return value
 
-    potential_settings = os.path.join(working_dir, _DEFAULT_LINTER_OPTIONS)
+    potential_settings = os.path.join(working_dir, DEFAULT_LINTER_OPTIONS)
     if not os.path.exists(potential_settings):
         raise click.BadParameter("Working git directory {} does not contain {} file. ".format(working_dir,
-                                                                                              _DEFAULT_LINTER_OPTIONS) +
+                                                                                              DEFAULT_LINTER_OPTIONS) +
                                  "Please provide path to the settings by using --settings option")
 
 

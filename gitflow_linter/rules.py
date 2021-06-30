@@ -8,8 +8,6 @@ class AttributeDict(dict):
         self.update(dictionary)
 
 
-_minor_major_patch_regex = r'^\d+\.\d+(\.\d+)?$'
-
 _defaults = AttributeDict({
         "main": "master",
         "dev": "develop",
