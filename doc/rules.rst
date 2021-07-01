@@ -24,6 +24,8 @@ Rules
     branch - releases must be closed as soon as they are deployed to production environment (or just before, 
     depending on your case)
     
+    since hotfixes are in fact releases started from master instead of develop, the rule will be checked against them as well
+    
     configure how long releases are supposed to be maintained by using ``deadline_to_close_release`` (number of days)"
 	"``no_dependant_features``","creating feature/bugfix branches one from another or merging them together before merging to develop 
     may result in ugly issues during code review and merge mistakes 

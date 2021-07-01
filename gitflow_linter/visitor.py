@@ -230,6 +230,8 @@ class DeadReleasesVisitor(BaseVisitor):
     branch - releases must be closed as soon as they are deployed to production environment (or just before, 
     depending on your case)
     
+    since hotfixes are in fact releases started from master instead of develop, the rule will be checked against them as well
+    
     configure how long releases are supposed to be maintained by using ``deadline_to_close_release`` (number of days)"""
 
     @property
@@ -238,16 +240,16 @@ class DeadReleasesVisitor(BaseVisitor):
 
     @arguments_checker(['deadline_to_close_release'])
     def visit(self, repo: Repository, *args, **kwargs) -> Section:
-        # TODO check hotfixes as well
         section = Section(rule=self.rule, title='Checked if repo contains abandoned and not removed releases')
         deadline = datetime.now() - timedelta(days=kwargs['deadline_to_close_release'])
         main_branch = '{}/{}'.format(repo.remote.name, self.settings.main)
         release_branch = '{}/{}/'.format(repo.remote.name, self.settings.releases)
+        hotfix_branch = '{}/{}/'.format(repo.remote.name, self.settings.hotfixes)
 
         query_for_not_merged_to_main = [r.strip() for r in
                                         repo.repo.git.branch('-r', '--no-merged', main_branch).split(os.linesep)]
         potential_dead_releases = [repo.branch(release) for release in query_for_not_merged_to_main if
-                                   release.strip().startswith(release_branch)]
+                                   release.strip().startswith(release_branch) or release.strip().startswith(hotfix_branch)]
         dead_releases = [dead_release for dead_release in potential_dead_releases if
                          deadline > dead_release.commit.authored_datetime.replace(tzinfo=None)]
 

@@ -36,7 +36,7 @@ You can change it by providing a desired output
 
 .. parsed-literal::
 
-    |command| /path/to/git/repository --output=json
+    |command| /path/to/git/repository --output=json >> results.json
 
 Then you should see in the console something that contains the same data as above but might be further processed.
 

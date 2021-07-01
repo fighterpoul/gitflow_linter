@@ -5,7 +5,7 @@ About
 
 What is Gitflow? `Based on Atlassian: <https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow>`__
 
-    The Gitflow Workflow defines a **strict branching model** designed around the project release. This provides a robust framework for managing larger projects.
+    The Gitflow Workflow defines a **strict branching model** designed around the project release.
 
     [...]
 

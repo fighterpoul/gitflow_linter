@@ -1,12 +1,16 @@
 import logging
 import os
+import sys
 from os import linesep
 from gitflow_linter.report import Report, Section
 
 FORMAT = '%(message)s'
-logging.basicConfig(format=FORMAT)
-log = logging.getLogger()
-log.setLevel(logging.INFO)
+logging.basicConfig(format=FORMAT, level=logging.INFO)
+log = logging.getLogger('main')
+
+_handler = logging.StreamHandler(sys.stdout)
+_results_log = logging.getLogger('results')
+_results_log.addHandler(_handler)
 
 
 def _console_output(report: Report):
@@ -39,7 +43,7 @@ def _console_output(report: Report):
 
 def _json_output(report: Report):
     import json
-    log.info(json.dumps({
+    _results_log.info(json.dumps({
         'repository': report.working_dir,
         'statistics': report.stats,
         'sections': [
