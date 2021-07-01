@@ -1,6 +1,7 @@
 import logging
+import os
 from os import linesep
-from report import Report, Section
+from gitflow_linter.report import Report, Section
 
 FORMAT = '%(message)s'
 logging.basicConfig(format=FORMAT)
@@ -23,7 +24,8 @@ def _console_output(report: Report):
     log.info('=' * len(title))
     log.info(title)
     log.info('=' * len(title))
-    log.info('Statistics: {}'.format(report.stats))
+    counts_format = '\t{}: {} open branch(es)'
+    log.info('Statistics:' + os.linesep + os.linesep.join([counts_format.format(branch, count) for branch, count in report.stats['counts'].items()]))
     log.info('=' * len(title))
     log.info(linesep + 'Results:')
     for section in report.sections:

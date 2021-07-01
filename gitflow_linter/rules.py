@@ -1,6 +1,3 @@
-import yaml
-
-
 class AttributeDict(dict):
     __slots__ = ()
     __getattr__ = dict.__getitem__
@@ -10,8 +7,6 @@ class AttributeDict(dict):
         super().__init__()
         self.update(dictionary)
 
-
-_minor_major_patch_regex = r'^\d+\.\d+(\.\d+)?$'
 
 _defaults = AttributeDict({
         "main": "master",
@@ -46,3 +41,6 @@ class RulesContainer:
 
     def args_for(self, rule) -> dict:
         return self._rules.get(rule, {})
+
+    def consume(self, rule: str):
+        del self._rules[rule]
