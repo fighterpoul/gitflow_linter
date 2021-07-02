@@ -20,7 +20,7 @@ setup(
     entry_points={
         'console_scripts': [
             'gitflow-linter = gitflow_linter:main',
-            'gitflow-linter-plugins = gitflow_linter:plugins',
+            'gitflow-linter-plugins = gitflow_linter:available_plugins',
         ],
     },
     python_requires='>3.8',

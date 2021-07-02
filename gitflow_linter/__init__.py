@@ -1,5 +1,3 @@
-import importlib
-import pkgutil
 import sys
 import os
 
@@ -13,15 +11,6 @@ from gitflow_linter.rules import RulesContainer, Gitflow
 
 DEFAULT_LINTER_OPTIONS = 'gitflow_linter.yaml'
 __version__ = '0.0.1'
-
-__discovered_plugins = {
-    name: importlib.import_module(name)
-    for finder, name, ispkg
-    in pkgutil.iter_modules()
-    if name.startswith('gitflow_') and name.endswith('_linter') and name != 'gitflow_linter'
-}
-
-__available_plugins = __discovered_plugins.keys()
 
 
 def _validate_settings(value, working_dir):
@@ -89,10 +78,11 @@ def parse_yaml(settings):
 
 def __get_all_visitors(gitflow, rules) -> dict:
     from gitflow_linter import visitor
+    from gitflow_linter import plugins
     visitors = [visitor for visitor in visitor.visitors(settings=gitflow) if visitor.rule in rules.rules]
     plugin_visitors = [plugin.visitors(settings=gitflow)
-                       for plugin in __discovered_plugins.values()
-                       if __is_plugin_valid(plugin_module=plugin)]
+                       for plugin in plugins.discovered_plugins.values()
+                       if plugins.is_plugin_valid(plugin_module=plugin)]
     flatten = lambda t: [item for sublist in t for item in sublist]
     all_visitors = visitors + [plugin_visitor
                                for plugin_visitor in flatten(plugin_visitors)
@@ -104,43 +94,22 @@ def __get_all_visitors(gitflow, rules) -> dict:
 
 
 @click.command()
-def plugins():
-    output.log.info(', '.join(sorted(__available_plugins)))
+def available_plugins():
+    from gitflow_linter import plugins
+    available_plugins = plugins.discovered_plugins.keys()
+    output.log.info(', '.join(sorted(available_plugins)))
     output.log.info('Available gitflow-linter plugins:')
-    if not __available_plugins:
+    if not available_plugins:
         output.log.info('No plugins found.')
-    for plugin in __available_plugins:
+    for plugin in available_plugins:
         try:
-            __validate_plugin(plugin_module=__discovered_plugins[plugin])
-            plugin_visitors = __discovered_plugins[plugin].visitors(settings={})
+            plugins.validate_plugin(plugin_module=plugins.discovered_plugins[plugin])
+            plugin_visitors = plugins.discovered_plugins[plugin].visitors(settings={})
             log_fmt = '- {} handles following rules: ' + os.linesep + '\t* {}'
             output.log.info(log_fmt.format(plugin, '\t* '.join([v.rule for v in plugin_visitors])))
         except BaseException as err:
             output.log.error('❌ {} cannot be used because of error: {}'.format(plugin, err))
     return sys.exit(0)
-
-
-def __validate_plugin(plugin_module):
-    visitors = plugin_module.visitors(settings={})
-    from gitflow_linter.visitor import BaseVisitor
-    invalid = [visitor
-               for visitor in plugin_module.visitors(settings={})
-               if not isinstance(visitor, BaseVisitor) or not visitor.rule]
-    if not visitors:
-        raise ValueError('Plugin is invalid because it has no visitors')
-    if len(invalid) > 0:
-        raise ValueError('Plugin is invalid because it has visitors that evaluate no rule or do not extend '
-                         'BaseVisitor: {} '
-                         .format(', '.join([str(type(v)) for v in invalid])))
-
-
-def __is_plugin_valid(plugin_module) -> bool:
-    try:
-        __validate_plugin(plugin_module=plugin_module)
-    except BaseException:
-        return False
-    else:
-        return True
 
 
 if __name__ == '__main__':
