@@ -23,7 +23,7 @@ class Gitflow(AttributeDict):
 
     def __init__(self, settings: dict):
         defaults = _defaults.copy()
-        if settings.get('branches', None):
+        if settings and settings.get('branches', None):
             defaults.update(settings['branches'])
         super().__init__(dictionary=defaults)
 
@@ -31,7 +31,7 @@ class Gitflow(AttributeDict):
 class RulesContainer:
 
     def __init__(self, rules: dict):
-        if not rules.get('rules', None):
+        if not rules or not rules.get('rules', None):
             raise KeyError('Yaml file does not contain rules')
         self._rules = rules['rules']
 

@@ -8,6 +8,7 @@ You can manipulate how linter works by using yaml file with settings.
 .. parsed-literal::
 
     repo_dir/
+    \|__ .git/
     \|__ |settings_file|
     \|__ other files and folders
 

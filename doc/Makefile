@@ -21,7 +21,7 @@ help:
 
 documentation:
 	python ./generate_includes.py
-	gitflow-linter --help >> help.txt
+	gitflow-linter --help > help.txt
 	@$(SPHINXBUILD) -M singlehtml "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 	@$(SPHINXBUILD) -M markdown "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 	cp "$(BUILDDIR)/markdown/readme.md" "../README.md"

@@ -21,3 +21,5 @@ rules: # mandatory, defines what needs to be validated and how
     deadline_to_close_release: 30
   no_dependant_features:
     max_dependant_branches: 0
+  no_multiple_open_features_per_author:
+    max_open_branches_per_author: 4
