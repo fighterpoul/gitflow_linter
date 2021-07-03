@@ -30,7 +30,7 @@ class BaseVisitor(RepositoryVisitor, ABC):
     """
     Abstract class describing how gitflow-linter works. A visitor must provide a rule that it is supposed to verify.
     The linter will let the visitor visit a repository only if user wants to check the repository against the rule.
-    Plugins can override default visitors returning the same rule as a visitor they wish override.
+    Plugins can override default visitors by returning the same rule as a visitor they wish override.
     """
 
     @property
@@ -72,8 +72,8 @@ class StatsRepositoryVisitor(RepositoryVisitor):
 
 
 class SingleBranchesVisitor(BaseVisitor):
-    __doc__ = """gitflow strongly relies on the fact that there is only one branch for keeping the release history 
-    and only one integration branch """
+    __doc__ = """gitflow strongly relies on the fact that there is (1) only one branch for keeping the release history 
+    and (2) only one integration branch """
 
     @property
     def rule(self) -> str:
@@ -104,8 +104,7 @@ class OldDevelopmentBranchesVisitor(BaseVisitor):
     def visit(self, repo: Repository, **kwargs) -> Section:
         section = Section(rule=self.rule, title='Checked if repo contains abandoned feature branches')
         deadline = datetime.now() - timedelta(days=kwargs['max_days_features'])
-        merged_branches = [branch.strip() for branch in
-                           repo.repo.git.branch('-r', '--merged', repo.dev.name).split(os.linesep)]
+        merged_branches = repo.raw_query(lambda git: git.branch('-r', '--merged', repo.dev.name))
 
         def _check_for_issues(branches: IterableList, name: str):
             for branch in branches:
@@ -174,9 +173,9 @@ class MainCommitsAreTaggedVisitor(BaseVisitor):
     def visit(self, repo: Repository, **kwargs) -> Section:
         section = Section(rule=self.rule, title='Checked if main repo branch has tagged commits')
         main_branch = '{}/{}'.format(repo.remote.name, self.settings.main)
-        query_for_main_commits = repo.repo.git.log(main_branch, '--merges', '--format=format:%H', '--first-parent') \
-            .split(os.linesep)
-        main_commits = [sha.strip() for sha in query_for_main_commits if sha]
+        main_commits = repo.raw_query(
+            lambda git: git.log(main_branch, '--merges', '--format=format:%H', '--first-parent'),
+            predicate=lambda sha: sha)
         tags = repo.repo.tags
         tags_sha = [tag.commit.hexsha for tag in tags]
         tags_not_on_main_branch = [sha for sha in tags_sha if sha not in main_commits]
@@ -246,16 +245,17 @@ class DeadReleasesVisitor(BaseVisitor):
         release_branch = '{}/{}/'.format(repo.remote.name, self.settings.releases)
         hotfix_branch = '{}/{}/'.format(repo.remote.name, self.settings.hotfixes)
 
-        query_for_not_merged_to_main = [r.strip() for r in
-                                        repo.repo.git.branch('-r', '--no-merged', main_branch).split(os.linesep)]
-        potential_dead_releases = [repo.branch(release) for release in query_for_not_merged_to_main if
-                                   release.strip().startswith(release_branch) or release.strip().startswith(hotfix_branch)]
+        potential_dead_releases = repo.raw_query(lambda git: git.branch('-r', '--no-merged', main_branch),
+                                                 predicate=lambda release: release.strip().startswith(
+                                                     release_branch) or release.strip().startswith(
+                                                     hotfix_branch),
+                                                 map_line=lambda release: repo.branch(release))
         dead_releases = [dead_release for dead_release in potential_dead_releases if
                          deadline > dead_release.commit.authored_datetime.replace(tzinfo=None)]
 
         section.extend([Issue.error(
             '{release} seems abandoned - it has never been merged into the main branch'.format(release=r.name)) for r in
-                        dead_releases])
+            dead_releases])
 
         return section
 
@@ -276,16 +276,15 @@ class DependantFeaturesVisitor(BaseVisitor):
         section = Section(rule=self.rule, title='Checked if repo contains dependant feature branches')
         dev_branch = '{}/{}'.format(repo.remote.name, self.settings.dev)
         max_dependant_branches = int(kwargs['max_dependant_branches'])
-        merged_branches = [branch.strip() for branch in
-                           repo.repo.git.branch('-r', '--merged', repo.dev.name).split(os.linesep)]
+        merged_branches = repo.raw_query(lambda git: git.branch('-r', '--merged', repo.dev.name))
         not_merged = [repo.branch(b.name) for b in repo.branches(self.settings.features) if
                       b.name not in merged_branches]
         branch_issue_format = '{} seems to depend on other feature branches. It contains following merges: ' + os.linesep + '{}'
 
         for feature in not_merged:
             name = feature.name
-            merge_commits_query = repo.repo.git.log('{}..{}'.format(dev_branch, name), '--merges', '--first-parent',
-                                                    '--format=format:%H').split(os.linesep)
+            merge_commits_query = repo.raw_query(lambda git: git.log('{}..{}'.format(dev_branch, name), '--merges',
+                                                                     '--first-parent', '--format=format:%H'))
             merge_commits_sha = [commit_sha.strip() for commit_sha in merge_commits_query]
             merge_commits_in_feature = [commit for commit in repo.repo.iter_commits(name, max_count=200) if
                                         commit.hexsha in merge_commits_sha]
