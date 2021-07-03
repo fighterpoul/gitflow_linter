@@ -39,6 +39,16 @@ class Repository:
     def dev(self) -> RemoteReference:
         return self.repo.heads[self.settings.dev]
 
+    def commits_in_branch(self, branch: RemoteReference) -> IterableList:
+        heads_commits = [head.commit for head in self.branches()]
+        all_commits = iter(self.repo.iter_commits(branch.name, max_count=300))
+        commits = [next(all_commits)]
+        for commit in all_commits:
+            if commit in heads_commits:
+                break
+            commits.append(commit)
+        return commits
+
     def raw_query(self, query: callable, predicate: callable = None, map_line: callable = None):
         """
         Let you run raw queries on GitPython's git object
