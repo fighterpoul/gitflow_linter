@@ -97,18 +97,17 @@ def __get_all_visitors(gitflow, rules) -> dict:
 def available_plugins():
     from gitflow_linter import plugins
     available_plugins = plugins.discovered_plugins.keys()
-    output.log.info(', '.join(sorted(available_plugins)))
-    output.log.info('Available gitflow-linter plugins:')
+    output.stdout_log.info('Available gitflow-linter plugins:')
     if not available_plugins:
-        output.log.info('No plugins found.')
+        output.stdout_log.info('No plugins found.')
     for plugin in available_plugins:
         try:
             plugins.validate_plugin(plugin_module=plugins.discovered_plugins[plugin])
             plugin_visitors = plugins.discovered_plugins[plugin].visitors(settings={})
             log_fmt = '- {} handles following rules: ' + os.linesep + '\t* {}'
-            output.log.info(log_fmt.format(plugin, '\t* '.join([v.rule for v in plugin_visitors])))
+            output.stdout_log.info(log_fmt.format(plugin, '\t* '.join([v.rule for v in plugin_visitors])))
         except BaseException as err:
-            output.log.error('❌ {} cannot be used because of error: {}'.format(plugin, err))
+            output.stdout_log.error('❌ {} cannot be used because of error: {}'.format(plugin, err))
     return sys.exit(0)
 
 

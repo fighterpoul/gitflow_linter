@@ -20,6 +20,12 @@ _defaults = AttributeDict({
 
 
 class Gitflow(AttributeDict):
+    """
+    Contains all settings related to branches from YAML file.
+    It extends :class:`AttributeDict <AttributeDict>`, so settings may be accessed like properties: ``gitflow.features``
+
+    It will contain custom settings if you add them in YAML file as a child of ``branches`` node.
+    """
 
     def __init__(self, settings: dict):
         defaults = _defaults.copy()

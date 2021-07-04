@@ -7,7 +7,6 @@ branches: # optional, defines how your gitflow is configured
   hotfixes: hotfix
   others:
     - spike
-    - test
 
 rules: # mandatory, defines what needs to be validated and how
   single_master_and_develop:

@@ -9,8 +9,8 @@ logging.basicConfig(format=FORMAT, level=logging.INFO)
 log = logging.getLogger('main')
 
 _handler = logging.StreamHandler(sys.stdout)
-_results_log = logging.getLogger('results')
-_results_log.addHandler(_handler)
+stdout_log = logging.getLogger('results')
+stdout_log.addHandler(_handler)
 
 
 def _console_output(report: Report):
@@ -43,7 +43,7 @@ def _console_output(report: Report):
 
 def _json_output(report: Report):
     import json
-    _results_log.info(json.dumps({
+    stdout_log.info(json.dumps({
         'repository': report.working_dir,
         'statistics': report.stats,
         'sections': [

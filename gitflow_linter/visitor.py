@@ -1,14 +1,14 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 import os
+from typing import List
+from functools import wraps
 
 from git import Head
 from git.util import IterableList
 
 from gitflow_linter.report import Section, Issue, Level
 from gitflow_linter.repository import Repository, RepositoryVisitor
-
-from functools import wraps
 
 
 def arguments_checker(keywords):
@@ -36,10 +36,25 @@ class BaseVisitor(RepositoryVisitor, ABC):
     @property
     @abstractmethod
     def rule(self) -> str:
+        """
+        :return: Rule from YAML file that is checked by the visitor
+        """
         pass
 
     def __init__(self, settings: dict):
         self.settings = settings
+
+    @abstractmethod
+    def visit(self, repo: Repository, *args, **kwargs) -> Section:
+        """
+        Verifies the :class:`repository <gitflow_linter.repository.Repository>` - checks if ``self.rule`` is respected
+
+        :param repo: Tiny wrapper for GitPython's repository
+        :param args:
+        :param kwargs: arguments from YAML file
+        :return: :class:`Section <gitflow_linter.report.Section>` with results
+        """
+        pass
 
 
 class StatsRepositoryVisitor(RepositoryVisitor):
@@ -300,7 +315,7 @@ class DependantFeaturesVisitor(BaseVisitor):
         return section
 
 
-def visitors(settings: dict):
+def visitors(settings: dict) -> List[BaseVisitor]:
     return [
         SingleBranchesVisitor(settings=settings),
         OldDevelopmentBranchesVisitor(settings=settings),

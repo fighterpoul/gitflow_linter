@@ -14,4 +14,5 @@ Welcome to gitflow-linter's documentation!
    settings
    rules
    results
+   plugins
 

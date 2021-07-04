@@ -54,13 +54,13 @@ class Repository:
         Let you run raw queries on GitPython's git object
 
         :param query: callable where you can run raw query,
-            eg. `lambda git: git.log('master')`
+            eg. ``lambda git: git.log('master')``
         :param predicate: optional callable where you can decide if given line should be included,
-            eg lambda commit: `commit.startwith('Merged')`. All lines included if predicate is not given.
+            eg. ``lambda commit: commit.startwith('Merged')``. All lines are included if predicate is not given.
         :param map_line: optional callable where you can map line to other object,
-            eg when query returns list of name of branches, you can map them to branch objects: `lambda line: repo.branch(line)`
+            eg. when query returns list of name of branches, you can map them to branch objects: ``lambda line: repo.branch(line)``
         :return: list of lines returned by query that matches optional predicate,
-            eg. ["sha-of-commit1", "sha-of-commit2", ...]
+            eg. ``["sha-of-commit1", "sha-of-commit2", ...]``
         """
         return [line.strip() if not map_line else map_line(line.strip())
                 for line in query(self.repo.git).split(os.linesep)
