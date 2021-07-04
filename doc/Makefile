@@ -26,4 +26,4 @@ documentation:
 	@$(SPHINXBUILD) -M singlehtml "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 	@$(SPHINXBUILD) -M markdown "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 	cp "$(BUILDDIR)/markdown/readme.md" "../README.md"
-	mv "$(BUILDDIR)/singlehtml/" "$(SOURCEDIR)/html/"
+	mv -v "$(BUILDDIR)/singlehtml"/* "$(SOURCEDIR)"
