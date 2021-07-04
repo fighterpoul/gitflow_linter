@@ -40,8 +40,8 @@ def main(git_directory, settings, out):
     try:
         settings = _validate_settings(settings, working_dir=git_directory)
         gitflow, rules = parse_yaml(settings)
-        repo = Repository(Repo(git_directory), settings=gitflow)
-        report = Report(working_dir=git_directory, stats=repo.apply(StatsRepositoryVisitor(settings=gitflow)), sections=[])
+        repo = Repository(Repo(git_directory), gitflow=gitflow)
+        report = Report(working_dir=git_directory, stats=repo.apply(StatsRepositoryVisitor(gitflow=gitflow)), sections=[])
 
         visitors = __get_all_visitors(gitflow=gitflow, rules=rules)
         for visitor in visitors.values():
@@ -79,8 +79,8 @@ def parse_yaml(settings):
 def __get_all_visitors(gitflow, rules) -> dict:
     from gitflow_linter import visitor
     from gitflow_linter import plugins
-    visitors = [visitor for visitor in visitor.visitors(settings=gitflow) if visitor.rule in rules.rules]
-    plugin_visitors = [plugin.visitors(settings=gitflow)
+    visitors = [visitor for visitor in visitor.visitors(gitflow=gitflow) if visitor.rule in rules.rules]
+    plugin_visitors = [plugin.visitors(gitflow=gitflow)
                        for plugin in plugins.discovered_plugins.values()
                        if plugins.is_plugin_valid(plugin_module=plugin)]
     flatten = lambda t: [item for sublist in t for item in sublist]
@@ -103,7 +103,7 @@ def available_plugins():
     for plugin in available_plugins:
         try:
             plugins.validate_plugin(plugin_module=plugins.discovered_plugins[plugin])
-            plugin_visitors = plugins.discovered_plugins[plugin].visitors(settings={})
+            plugin_visitors = plugins.discovered_plugins[plugin].visitors(gitflow={})
             log_fmt = '- {} handles following rules: ' + os.linesep + '\t* {}'
             output.stdout_log.info(log_fmt.format(plugin, '\t* '.join([v.rule for v in plugin_visitors])))
         except BaseException as err:

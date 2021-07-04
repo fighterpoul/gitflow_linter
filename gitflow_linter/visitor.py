@@ -7,6 +7,7 @@ from functools import wraps
 from git import Head
 from git.util import IterableList
 
+from gitflow_linter import Gitflow
 from gitflow_linter.report import Section, Issue, Level
 from gitflow_linter.repository import Repository, RepositoryVisitor
 
@@ -41,8 +42,8 @@ class BaseVisitor(RepositoryVisitor, ABC):
         """
         pass
 
-    def __init__(self, settings: dict):
-        self.settings = settings
+    def __init__(self, gitflow: Gitflow):
+        self.gitflow = gitflow
 
     @abstractmethod
     def visit(self, repo: Repository, *args, **kwargs) -> Section:
@@ -59,8 +60,8 @@ class BaseVisitor(RepositoryVisitor, ABC):
 
 class StatsRepositoryVisitor(RepositoryVisitor):
 
-    def __init__(self, settings: dict):
-        self.settings = settings
+    def __init__(self, gitflow: Gitflow):
+        self.gitflow = gitflow
 
     def visit(self, repo: Repository, **kwargs):
         def names(branches: IterableList):
@@ -68,20 +69,20 @@ class StatsRepositoryVisitor(RepositoryVisitor):
 
         return {
             "references": {
-                "main": names(branches=repo.branches(folder=self.settings.main)),
-                "dev": names(branches=repo.branches(folder=self.settings.dev)),
-                "features": names(branches=repo.branches(folder=self.settings.features)),
-                "fixes": names(branches=repo.branches(folder=self.settings.fixes)),
-                "releases": names(branches=repo.branches(folder=self.settings.releases)),
-                "hotfixes": names(branches=repo.branches(folder=self.settings.hotfixes)),
+                "main": names(branches=repo.branches(folder=self.gitflow.main)),
+                "dev": names(branches=repo.branches(folder=self.gitflow.dev)),
+                "features": names(branches=repo.branches(folder=self.gitflow.features)),
+                "fixes": names(branches=repo.branches(folder=self.gitflow.fixes)),
+                "releases": names(branches=repo.branches(folder=self.gitflow.releases)),
+                "hotfixes": names(branches=repo.branches(folder=self.gitflow.hotfixes)),
             },
             "counts": {
-                "main": len(repo.branches(folder=self.settings.main)),
-                "dev": len(repo.branches(folder=self.settings.dev)),
-                "features": len(repo.branches(folder=self.settings.features)),
-                "fixes": len(repo.branches(folder=self.settings.fixes)),
-                "releases": len(repo.branches(folder=self.settings.releases)),
-                "hotfixes": len(repo.branches(folder=self.settings.hotfixes)),
+                "main": len(repo.branches(folder=self.gitflow.main)),
+                "dev": len(repo.branches(folder=self.gitflow.dev)),
+                "features": len(repo.branches(folder=self.gitflow.features)),
+                "fixes": len(repo.branches(folder=self.gitflow.fixes)),
+                "releases": len(repo.branches(folder=self.gitflow.releases)),
+                "hotfixes": len(repo.branches(folder=self.gitflow.hotfixes)),
             }
         }
 
@@ -98,9 +99,9 @@ class SingleBranchesVisitor(BaseVisitor):
         section = Section(rule=self.rule, title='Checked if repo contains single release history branch and single '
                                                 'integration branch')
         # TODO add more smart checking
-        if len(repo.branches(folder=self.settings.main)) > 1:
+        if len(repo.branches(folder=self.gitflow.main)) > 1:
             section.append(Issue.error('Repository contains more than one main branch'))
-        if len(repo.branches(folder=self.settings.dev)) > 1:
+        if len(repo.branches(folder=self.gitflow.dev)) > 1:
             section.append(Issue.error('Repository contains more than one dev branch'))
 
         return section
@@ -129,8 +130,8 @@ class OldDevelopmentBranchesVisitor(BaseVisitor):
                         '{} {} has not been touched since {}'.format(name, branch.name,
                                                                      branch.commit.authored_datetime)))
 
-        _check_for_issues(branches=repo.branches(folder=self.settings.features), name='Feature')
-        _check_for_issues(branches=repo.branches(folder=self.settings.fixes), name='Fix')
+        _check_for_issues(branches=repo.branches(folder=self.gitflow.features), name='Feature')
+        _check_for_issues(branches=repo.branches(folder=self.gitflow.fixes), name='Fix')
 
         return section
 
@@ -150,19 +151,19 @@ class NotScopedBranchesVisitor(BaseVisitor):
         expected_prefixes = [
                                 expected_prefix_template.format(remote=repo.remote.name, branch='HEAD'),
                                 expected_prefix_template.format(remote=repo.remote.name,
-                                                                branch=self.settings.main),
+                                                                branch=self.gitflow.main),
                                 expected_prefix_template.format(remote=repo.remote.name,
-                                                                branch=self.settings.dev),
+                                                                branch=self.gitflow.dev),
                                 expected_prefix_template.format(remote=repo.remote.name,
-                                                                branch=self.settings.features),
+                                                                branch=self.gitflow.features),
                                 expected_prefix_template.format(remote=repo.remote.name,
-                                                                branch=self.settings.fixes),
+                                                                branch=self.gitflow.fixes),
                                 expected_prefix_template.format(remote=repo.remote.name,
-                                                                branch=self.settings.hotfixes),
+                                                                branch=self.gitflow.hotfixes),
                                 expected_prefix_template.format(remote=repo.remote.name,
-                                                                branch=self.settings.releases),
+                                                                branch=self.gitflow.releases),
                             ] + [expected_prefix_template.format(remote=repo.remote.name, branch=branch.strip())
-                                 for branch in self.settings.others]
+                                 for branch in self.gitflow.others]
 
         def has_expected_prefix(branch: Head) -> bool:
             for prefix in expected_prefixes:
@@ -187,7 +188,7 @@ class MainCommitsAreTaggedVisitor(BaseVisitor):
 
     def visit(self, repo: Repository, **kwargs) -> Section:
         section = Section(rule=self.rule, title='Checked if main repo branch has tagged commits')
-        main_branch = '{}/{}'.format(repo.remote.name, self.settings.main)
+        main_branch = '{}/{}'.format(repo.remote.name, self.gitflow.main)
         main_commits = repo.raw_query(
             lambda git: git.log(main_branch, '--merges', '--format=format:%H', '--first-parent'),
             predicate=lambda sha: sha)
@@ -220,7 +221,7 @@ class VersionNamesConventionVisitor(BaseVisitor):
     def visit(self, repo: Repository, *args, **kwargs) -> Section:
         import re
         section = Section(rule=self.rule, title='Checked if version names follow given convention')
-        releases = [branch.name for branch in repo.branches(self.settings.releases)]
+        releases = [branch.name for branch in repo.branches(self.gitflow.releases)]
         tags = [tag.name for tag in repo.repo.tags]
         version_reg = kwargs['version_regex']
 
@@ -256,9 +257,9 @@ class DeadReleasesVisitor(BaseVisitor):
     def visit(self, repo: Repository, *args, **kwargs) -> Section:
         section = Section(rule=self.rule, title='Checked if repo contains abandoned and not removed releases')
         deadline = datetime.now() - timedelta(days=kwargs['deadline_to_close_release'])
-        main_branch = '{}/{}'.format(repo.remote.name, self.settings.main)
-        release_branch = '{}/{}/'.format(repo.remote.name, self.settings.releases)
-        hotfix_branch = '{}/{}/'.format(repo.remote.name, self.settings.hotfixes)
+        main_branch = '{}/{}'.format(repo.remote.name, self.gitflow.main)
+        release_branch = '{}/{}/'.format(repo.remote.name, self.gitflow.releases)
+        hotfix_branch = '{}/{}/'.format(repo.remote.name, self.gitflow.hotfixes)
 
         potential_dead_releases = repo.raw_query(lambda git: git.branch('-r', '--no-merged', main_branch),
                                                  predicate=lambda release: release.strip().startswith(
@@ -289,10 +290,10 @@ class DependantFeaturesVisitor(BaseVisitor):
     @arguments_checker(['max_dependant_branches'])
     def visit(self, repo: Repository, *args, **kwargs) -> Section:
         section = Section(rule=self.rule, title='Checked if repo contains dependant feature branches')
-        dev_branch = '{}/{}'.format(repo.remote.name, self.settings.dev)
+        dev_branch = '{}/{}'.format(repo.remote.name, self.gitflow.dev)
         max_dependant_branches = int(kwargs['max_dependant_branches'])
         merged_branches = repo.raw_query(lambda git: git.branch('-r', '--merged', repo.dev.name))
-        not_merged = [repo.branch(b.name) for b in repo.branches(self.settings.features) if
+        not_merged = [repo.branch(b.name) for b in repo.branches(self.gitflow.features) if
                       b.name not in merged_branches]
         branch_issue_format = '{} seems to depend on other feature branches. It contains following merges: ' + os.linesep + '{}'
 
@@ -303,7 +304,7 @@ class DependantFeaturesVisitor(BaseVisitor):
             merge_commits_sha = [commit_sha.strip() for commit_sha in merge_commits_query]
             merge_commits_in_feature = [commit for commit in repo.repo.iter_commits(name, max_count=200) if
                                         commit.hexsha in merge_commits_sha]
-            branch_issues = [commit for commit in merge_commits_in_feature if self.settings.dev not in commit.message]
+            branch_issues = [commit for commit in merge_commits_in_feature if self.gitflow.dev not in commit.message]
 
             if branch_issues:
                 is_limit_exceeded = len(branch_issues) > max_dependant_branches
@@ -315,13 +316,13 @@ class DependantFeaturesVisitor(BaseVisitor):
         return section
 
 
-def visitors(settings: dict) -> List[BaseVisitor]:
+def visitors(gitflow: Gitflow) -> List[BaseVisitor]:
     return [
-        SingleBranchesVisitor(settings=settings),
-        OldDevelopmentBranchesVisitor(settings=settings),
-        NotScopedBranchesVisitor(settings=settings),
-        MainCommitsAreTaggedVisitor(settings=settings),
-        VersionNamesConventionVisitor(settings=settings),
-        DeadReleasesVisitor(settings=settings),
-        DependantFeaturesVisitor(settings=settings),
+        SingleBranchesVisitor(gitflow=gitflow),
+        OldDevelopmentBranchesVisitor(gitflow=gitflow),
+        NotScopedBranchesVisitor(gitflow=gitflow),
+        MainCommitsAreTaggedVisitor(gitflow=gitflow),
+        VersionNamesConventionVisitor(gitflow=gitflow),
+        DeadReleasesVisitor(gitflow=gitflow),
+        DependantFeaturesVisitor(gitflow=gitflow),
     ]

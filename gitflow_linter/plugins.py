@@ -10,10 +10,10 @@ discovered_plugins = {
 
 
 def validate_plugin(plugin_module):
-    visitors = plugin_module.visitors(settings={})
+    visitors = plugin_module.visitors(gitflow={})
     from gitflow_linter.visitor import BaseVisitor
     invalid = [visitor
-               for visitor in plugin_module.visitors(settings={})
+               for visitor in plugin_module.visitors(gitflow={})
                if not isinstance(visitor, BaseVisitor) or not visitor.rule]
     if not visitors:
         raise ValueError('Plugin is invalid because it has no visitors')

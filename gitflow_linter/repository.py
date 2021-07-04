@@ -4,11 +4,13 @@ from abc import ABC, abstractmethod
 from git import Repo, Remote, RemoteReference
 from git.util import IterableList
 
+from gitflow_linter import Gitflow
+
 
 class Repository:
-    def __init__(self, repo: Repo, settings: dict):
+    def __init__(self, repo: Repo, gitflow: Gitflow):
         self.repo = repo
-        self.settings = settings
+        self.gitflow = gitflow
         self.assert_repo()
         self.remote.fetch()
 
@@ -33,11 +35,11 @@ class Repository:
 
     @property
     def main(self) -> RemoteReference:
-        return self.repo.heads[self.settings.main]
+        return self.repo.heads[self.gitflow.main]
 
     @property
     def dev(self) -> RemoteReference:
-        return self.repo.heads[self.settings.dev]
+        return self.repo.heads[self.gitflow.dev]
 
     def commits_in_branch(self, branch: RemoteReference) -> IterableList:
         heads_commits = [head.commit for head in self.branches()]
