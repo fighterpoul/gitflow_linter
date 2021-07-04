@@ -8,8 +8,8 @@ Rules
     :header: "Rule", "Description"
     :widths: 15, 30
 
-	"``single_master_and_develop``","gitflow strongly relies on the fact that there is only one branch for keeping the release history 
-    and only one integration branch"
+	"``single_master_and_develop``","gitflow strongly relies on the fact that there is (1) only one branch for keeping the release history 
+    and (2) only one integration branch"
 	"``no_old_development_branches``","having old feature or bugfix branches may create a mess in the repository
     
     use ``max_days_features`` option to configure what 'old' means for you"
@@ -23,6 +23,8 @@ Rules
 	"``no_dead_releases``","release branches that are not closed may create a mess in the repository and breaks the master/main 
     branch - releases must be closed as soon as they are deployed to production environment (or just before, 
     depending on your case)
+    
+    since hotfixes are in fact releases started from master instead of develop, the rule will be checked against them as well
     
     configure how long releases are supposed to be maintained by using ``deadline_to_close_release`` (number of days)"
 	"``no_dependant_features``","creating feature/bugfix branches one from another or merging them together before merging to develop 

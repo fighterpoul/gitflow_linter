@@ -21,17 +21,30 @@ class Issue:
 
     @classmethod
     def info(cls, description: str):
+        """
+        Creates an ``Issue`` with INFO severity
+        """
         return cls(Level.INFO, description)
 
     @classmethod
     def warning(cls, description: str):
+        """
+        Creates an ``Issue`` with WARNING severity
+        """
         return cls(Level.WARNING, description)
 
     @classmethod
     def error(cls, description: str):
+        """
+        Creates an ``Issue`` with ERROR severity
+        """
         return cls(Level.ERROR, description)
 
     def __init__(self, level: Level, description: str):
+        """
+        :param level: Describes severity of the Issue
+        :param description: Explanation of what is wrong
+        """
         self.level = level
         self.description = description
 
@@ -40,6 +53,10 @@ class Issue:
 
 
 class Section:
+    """
+    Represents repository verification done for a single rule.
+    Results are represented by list of :class:`Issues <Issue>`.
+    """
 
     def __init__(self, rule: str, title: str):
         self.rule = rule
@@ -47,6 +64,12 @@ class Section:
         self.issues = []
 
     def append(self, issue: Issue):
+        """
+        Adds new issue detected
+
+        :param issue: New issue detected
+        :return:
+        """
         self.issues.append(issue)
 
     def extend(self, issues: list):

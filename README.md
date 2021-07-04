@@ -32,8 +32,6 @@ python setup.py install
 ## Usages
 
 ```
-gitflow-linter --help
-
 Usage: gitflow-linter [OPTIONS] GIT_DIRECTORY
 
   Evaluate given repository and check if gitflow is respected
@@ -41,7 +39,15 @@ Usage: gitflow-linter [OPTIONS] GIT_DIRECTORY
 Options:
   -s, --settings FILENAME
   -o, --output [console|json]
-  --help Show this message and exit.
+  --help                       Show this message and exit.
+Usage: gitflow-linter [OPTIONS] GIT_DIRECTORY
+
+  Evaluate given repository and check if gitflow is respected
+
+Options:
+  -s, --settings FILENAME
+  -o, --output [console|json]
+  --help                       Show this message and exit.
 ```
 
 Standard use case looks pretty simple:

@@ -22,7 +22,7 @@ def main():
     rules = {
         'rules': [
             (v.rule, v.__doc__.strip() if v.__doc__ else '')
-            for v in visitor.visitors(settings={})
+            for v in visitor.visitors(gitflow={})
         ]
     }
     with open(file_path, 'w+') as file:

@@ -1,0 +1,3 @@
+Available gitflow-linter plugins:
+- gitflow_authors_linter handles following rules: 
+	* no_multiple_open_features_per_author
