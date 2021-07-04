@@ -52,7 +52,7 @@ gitflow-linter /path/to/git/repository
 
 # Documentation
 
-A bit more detailed documentation [can be found here](https://fighterpoul.github.io/gitflow-linter)
+A bit more detailed documentation can be found here: [https://fighterpoul.github.io/gitflow_linter/](https://fighterpoul.github.io/gitflow_linter/)
 
 # License
 

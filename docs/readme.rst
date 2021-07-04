@@ -6,7 +6,7 @@
 
 Documentation
 =============
-A bit more detailed documentation `can be found here <https://fighterpoul.github.io/gitflow-linter>`__
+A bit more detailed documentation can be found here: |doc_url|
 
 License
 =======
