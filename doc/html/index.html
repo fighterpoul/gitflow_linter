@@ -1,0 +1,410 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>gitflow_linter 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="author" title="About these documents" href="#" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="#">gitflow_linter 0.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">gitflow_linter 0.0.1 documentation</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="welcome-to-gitflow-linter-s-documentation">
+<h1>Welcome to gitflow-linter’s documentation!<a class="headerlink" href="#welcome-to-gitflow-linter-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<span id="document-about"></span><section id="about">
+<h2>About<a class="headerlink" href="#about" title="Permalink to this headline">¶</a></h2>
+<p>gitflow-linter is command line tool written in Python. It checks given repository against provided rules to ensure that Gitflow is respected.</p>
+<p>What is Gitflow? <a class="reference external" href="https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow">Based on Atlassian:</a></p>
+<blockquote>
+<div><p>The Gitflow Workflow defines a <strong>strict branching model</strong> designed around the project release.</p>
+<p>[…]</p>
+<p>It assigns <strong>very specific roles to different branches and defines how and when they should interact</strong>. In addition to feature branches, it uses individual branches for preparing, maintaining, and recording releases.</p>
+</div></blockquote>
+<p>As they wrote: <em>Gitflow is ideally suited for projects that have a scheduled release cycle</em>. It means that Gitflow is not always recommended, but when it is, you’d better stick to the rules!</p>
+<p>And this is when gitflow-linter can help ;-)</p>
+</section>
+<span id="document-quickstart"></span><section id="quick-start">
+<h2>Quick Start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h2>
+<section id="installation">
+<h3>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h3>
+<p>You can install the linter from the source code</p>
+<pre class="literal-block">git clone <a class="reference external" href="https://github.com/fighterpoul/gitflow_linter.git">https://github.com/fighterpoul/gitflow_linter.git</a>
+cd gitflow_linter
+git checkout 0.0.1
+python setup.py install</pre>
+</section>
+<section id="usages">
+<h3>Usages<a class="headerlink" href="#usages" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">Usage: gitflow-linter [OPTIONS] GIT_DIRECTORY</span>
+
+<span class="go">  Evaluate given repository and check if gitflow is respected</span>
+
+<span class="go">Options:</span>
+<span class="go">  -s, --settings FILENAME</span>
+<span class="go">  -o, --output [console|json]</span>
+<span class="go">  --help                       Show this message and exit.</span>
+</pre></div>
+</div>
+<p>Standard use case looks pretty simple:</p>
+<pre class="literal-block">gitflow-linter /path/to/git/repository</pre>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>URL to a remote is not supported. Passing <a class="reference external" href="https://github.com/fighterpoul/gitflow_linter.git">https://github.com/fighterpoul/gitflow_linter.git</a> as the argument will fail.</p>
+</div>
+</section>
+</section>
+<span id="document-settings"></span><section id="settings">
+<h2>Settings<a class="headerlink" href="#settings" title="Permalink to this headline">¶</a></h2>
+<p>You can manipulate how linter works by using yaml file with settings.</p>
+<ul class="simple">
+<li><p>place the in a root folder of your repo as gitflow_linter.yaml</p></li>
+</ul>
+<pre class="literal-block">repo_dir/
+|__ .git/
+|__ gitflow_linter.yaml
+|__ other files and folders</pre>
+<p>or</p>
+<ul class="simple">
+<li><p>wherever you want and pass as an option.</p></li>
+</ul>
+<pre class="literal-block">gitflow-linter /path/to/git/repository --settings=my_settings.yaml</pre>
+<p>Example file:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">branches</span><span class="p">:</span> <span class="c1"># optional, defines how your gitflow is configured</span>
+  <span class="nt">main</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">master</span>
+  <span class="nt">dev</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">develop</span>
+  <span class="nt">features</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">feature</span>
+  <span class="nt">fixes</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">bugfix</span>
+  <span class="nt">releases</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">release</span>
+  <span class="nt">hotfixes</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">hotfix</span>
+  <span class="nt">others</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="l l-Scalar l-Scalar-Plain">spike</span>
+
+<span class="nt">rules</span><span class="p">:</span> <span class="c1"># mandatory, defines what needs to be validated and how</span>
+  <span class="nt">single_master_and_develop</span><span class="p">:</span>
+  <span class="nt">no_old_development_branches</span><span class="p">:</span>
+    <span class="nt">max_days_features</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">50</span>
+  <span class="nt">no_orphan_branches</span><span class="p">:</span>
+  <span class="nt">master_must_have_tags</span><span class="p">:</span>
+  <span class="nt">version_names_follow_convention</span><span class="p">:</span>
+    <span class="nt">version_regex</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">^\d+\.\d+(\.\d+)?$</span> <span class="c1"># standard major.minor(.optional patch) convention</span>
+  <span class="nt">no_dead_releases</span><span class="p">:</span>
+    <span class="nt">deadline_to_close_release</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">30</span>
+  <span class="nt">no_dependant_features</span><span class="p">:</span>
+    <span class="nt">max_dependant_branches</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">0</span>
+</pre></div>
+</div>
+</section>
+<span id="document-rules"></span><section id="rules">
+<h2>Rules<a class="headerlink" href="#rules" title="Permalink to this headline">¶</a></h2>
+<table class="colwidths-given docutils align-default" id="id1">
+<caption><span class="caption-text">Available rules</span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 67%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Rule</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">single_master_and_develop</span></code></p></td>
+<td><p>gitflow strongly relies on the fact that there is (1) only one branch for keeping the release history
+and (2) only one integration branch</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">no_old_development_branches</span></code></p></td>
+<td><p>having old feature or bugfix branches may create a mess in the repository</p>
+<p>use <code class="docutils literal notranslate"><span class="pre">max_days_features</span></code> option to configure what ‘old’ means for you</p>
+</td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">no_orphan_branches</span></code></p></td>
+<td><p>having branches that are out of configured folders (eg. created out of feature/, bugfix/) may be an
+indicator that you do something wrong and create a mess in the repo</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">master_must_have_tags</span></code></p></td>
+<td><p>if your master branch contains commits that are not tagged, it probably means that you don’t use
+master as your releases history keeper</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">version_names_follow_convention</span></code></p></td>
+<td><p>checks if release branches and tags follow version naming convention</p>
+<p>the convention must be specified in <code class="docutils literal notranslate"><span class="pre">version_regex</span></code> argument as a regular expression string</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">no_dead_releases</span></code></p></td>
+<td><p>release branches that are not closed may create a mess in the repository and breaks the master/main
+branch - releases must be closed as soon as they are deployed to production environment (or just before,
+depending on your case)</p>
+<p>since hotfixes are in fact releases started from master instead of develop, the rule will be checked against them as well</p>
+<p>configure how long releases are supposed to be maintained by using <code class="docutils literal notranslate"><span class="pre">deadline_to_close_release</span></code> (number of days)</p>
+</td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">no_dependant_features</span></code></p></td>
+<td><p>creating feature/bugfix branches one from another or merging them together before merging to develop
+may result in ugly issues during code review and merge mistakes</p>
+<p>creating such a feature/merge is sometimes inevitable, you must configure the limit of such branches by using
+<code class="docutils literal notranslate"><span class="pre">max_dependant_branches</span></code> option</p>
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<span id="document-results"></span><section id="results">
+<h2>Results<a class="headerlink" href="#results" title="Permalink to this headline">¶</a></h2>
+<p>By default once job is done a report is printed as a text in a human readable form:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">============================================================</span>
+<span class="go">Report for git repository: GIT_DIRECTORY</span>
+<span class="go">============================================================</span>
+<span class="go">Statistics:</span>
+<span class="go">    main: 1 branch(es)</span>
+<span class="go">    dev: 1 branch(es)</span>
+<span class="go">    features: 154 branch(es)</span>
+<span class="go">    fixes: 77 branch(es)</span>
+<span class="go">    releases: 5 branch(es)</span>
+<span class="go">    hotfixes: 3 branch(es)</span>
+<span class="go">============================================================</span>
+
+<span class="go">Results:</span>
+
+<span class="go">✅   /* rule from yaml that has been checked */</span>
+<span class="go">    Quick info on what was checked</span>
+
+<span class="go">❌   /* next rule from yaml */</span>
+<span class="go">    Quick info</span>
+<span class="go">    Issues detected:</span>
+<span class="go">        - Details of an issue, usually with the name of a problematic branch</span>
+
+<span class="go">❌   /* rule with error, eg. bad yaml config */</span>
+<span class="go">    ERROR!</span>
+<span class="go">    Issues detected:</span>
+<span class="go">        - 💀 Cannot be checked because of error: /* reason, eg. missing argument */</span>
+</pre></div>
+</div>
+<p>You can change it by providing a desired output</p>
+<pre class="literal-block">gitflow-linter /path/to/git/repository --output=json &gt;&gt; results.json</pre>
+<p>Then you should see in the console something that contains the same data as above but might be further processed.</p>
+<p>Either way, in case of any issues the exit code will be 1. If repo is all good then 0 is returned.</p>
+</section>
+<span id="document-plugins"></span><section id="plugins">
+<h2>Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline">¶</a></h2>
+<p>gitflow-linter is by design open for extensions, you can write a plugin and define your own rules as well as override implementation of existing ones.</p>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>The module that is installed and has name <cite>gitflow_{name}_linter</cite> will be considered as a plugin. Consider checking official plugin <code class="docutils literal notranslate"><span class="pre">gitflow_authors_linter</span></code>.</p>
+</div>
+<section id="general-principles">
+<h3>General principles<a class="headerlink" href="#general-principles" title="Permalink to this headline">¶</a></h3>
+<p>gitflow-linter is written by using <a class="reference external" href="https://refactoring.guru/design-patterns/visitor">Visitor pattern</a>.
+Plugin is just a list of visitors that are subscribed to check corresponding rules.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># gitflow_my_awesome_plugin_linter/__init__.py</span>
+
+<span class="k">class</span> <span class="nc">MyAwesomeRuleVisitor</span><span class="p">(</span><span class="n">gitflow_linter</span><span class="o">.</span><span class="n">visitor</span><span class="o">.</span><span class="n">BaseVisitor</span><span class="p">):</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">rule</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;my_awesome_rule_that_can_be_added_into_yaml_file&#39;</span>
+
+    <span class="nd">@gitflow_linter</span><span class="o">.</span><span class="n">visitor</span><span class="o">.</span><span class="n">arguments_checker</span><span class="p">(</span><span class="s1">&#39;my_awesome_rule_argument&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">visit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">repo</span><span class="p">:</span> <span class="n">gitflow_linter</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">Repository</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gitflow_linter</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">Section</span><span class="p">:</span>
+        <span class="c1"># visit repository and return a ``Section`` with results of inspection</span>
+        <span class="c1"># you can read ``Gitflow`` options by using self.settings (eg. name of branches): self.settings.dev</span>
+        <span class="c1"># you can read your rule settings by using kwargs[&#39;my_awesome_rule_argument&#39;]</span>
+
+<span class="k">def</span> <span class="nf">visitors</span><span class="p">(</span><span class="n">settings</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">gitflow_linter</span><span class="o">.</span><span class="n">visitor</span><span class="o">.</span><span class="n">BaseVisitor</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">MyAwesomeRuleVisitor</span><span class="p">(</span><span class="n">settings</span><span class="o">=</span><span class="n">settings</span><span class="p">)]</span>
+</pre></div>
+</div>
+<p>Example visitor will be ran if <a class="reference internal" href="index.html#settings"><span class="std std-ref">yaml settings file</span></a> contains the rule:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">rules</span><span class="p">:</span>
+    <span class="nt">my_awesome_rule_that_can_be_added_into_yaml_file</span><span class="p">:</span>
+        <span class="nt">my_awesome_rule_argument</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">20</span>
+</pre></div>
+</div>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>If your plugin’s visitor returns an <a class="reference internal" href="index.html#rules"><span class="std std-ref">existing, pre-configured rule</span></a>, it will be ran <strong>instead of</strong> default visitor. This is how you can override default behaviour.</p>
+</div>
+<p>To verify if a plugin is properly installed and recognized you can run <code class="docutils literal notranslate"><span class="pre">gitflow-linter-plugins</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Available</span> <span class="n">gitflow</span><span class="o">-</span><span class="n">linter</span> <span class="n">plugins</span><span class="p">:</span>
+<span class="n">No</span> <span class="n">plugins</span> <span class="n">found</span><span class="o">.</span>
+</pre></div>
+</div>
+</section>
+<section id="api-reference">
+<h3>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h3>
+<p>From a plugin perspective, those are the most important classes:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="gitflow_linter.repository.Repository">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">gitflow_linter.repository.</span></span><span class="sig-name descname"><span class="pre">Repository</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">git.repo.base.Repo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gitflow</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="index.html#gitflow_linter.rules.Gitflow" title="gitflow_linter.rules.Gitflow"><span class="pre">gitflow_linter.rules.Gitflow</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.repository.Repository" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="gitflow_linter.repository.Repository.raw_query">
+<span class="sig-name descname"><span class="pre">raw_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predicate</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">callable</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">map_line</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">callable</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.repository.Repository.raw_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Let you run raw queries on GitPython’s git object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> – callable where you can run raw query,
+eg. <code class="docutils literal notranslate"><span class="pre">lambda</span> <span class="pre">git:</span> <span class="pre">git.log('master')</span></code></p></li>
+<li><p><strong>predicate</strong> – optional callable where you can decide if given line should be included,
+eg. <code class="docutils literal notranslate"><span class="pre">lambda</span> <span class="pre">commit:</span> <span class="pre">commit.startwith('Merged')</span></code>. All lines are included if predicate is not given.</p></li>
+<li><p><strong>map_line</strong> – optional callable where you can map line to other object,
+eg. when query returns list of name of branches, you can map them to branch objects: <code class="docutils literal notranslate"><span class="pre">lambda</span> <span class="pre">line:</span> <span class="pre">repo.branch(line)</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of lines returned by query that matches optional predicate,
+eg. <code class="docutils literal notranslate"><span class="pre">[&quot;sha-of-commit1&quot;,</span> <span class="pre">&quot;sha-of-commit2&quot;,</span> <span class="pre">...]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gitflow_linter.rules.Gitflow">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">gitflow_linter.rules.</span></span><span class="sig-name descname"><span class="pre">Gitflow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.rules.Gitflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contains all settings related to branches from YAML file.
+It extends <code class="xref py py-class docutils literal notranslate"><span class="pre">AttributeDict</span></code>, so settings may be accessed like properties: <code class="docutils literal notranslate"><span class="pre">gitflow.features</span></code></p>
+<p>It will contain custom settings if you add them in YAML file as a child of <code class="docutils literal notranslate"><span class="pre">branches</span></code> node.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gitflow_linter.visitor.BaseVisitor">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">gitflow_linter.visitor.</span></span><span class="sig-name descname"><span class="pre">BaseVisitor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gitflow</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="index.html#gitflow_linter.rules.Gitflow" title="gitflow_linter.rules.Gitflow"><span class="pre">gitflow_linter.rules.Gitflow</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.visitor.BaseVisitor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract class describing how gitflow-linter works. A visitor must provide a rule that it is supposed to verify.
+The linter will let the visitor visit a repository only if user wants to check the repository against the rule.
+Plugins can override default visitors by returning the same rule as a visitor they wish override.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="gitflow_linter.visitor.BaseVisitor.rule">
+<em class="property"><span class="pre">abstract</span> <span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">rule</span></span><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><a class="headerlink" href="#gitflow_linter.visitor.BaseVisitor.rule" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Rule from YAML file that is checked by the visitor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gitflow_linter.visitor.BaseVisitor.visit">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">visit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="index.html#gitflow_linter.repository.Repository" title="gitflow_linter.repository.Repository"><span class="pre">gitflow_linter.repository.Repository</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="index.html#gitflow_linter.report.Section" title="gitflow_linter.report.Section"><span class="pre">gitflow_linter.report.Section</span></a><a class="headerlink" href="#gitflow_linter.visitor.BaseVisitor.visit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verifies the <a class="reference internal" href="#gitflow_linter.repository.Repository" title="gitflow_linter.repository.Repository"><code class="xref py py-class docutils literal notranslate"><span class="pre">repository</span></code></a> - checks if <code class="docutils literal notranslate"><span class="pre">self.rule</span></code> is respected</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>repo</strong> – Tiny wrapper for GitPython’s repository</p></li>
+<li><p><strong>args</strong> – </p></li>
+<li><p><strong>kwargs</strong> – arguments from YAML file</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><a class="reference internal" href="#gitflow_linter.report.Section" title="gitflow_linter.report.Section"><code class="xref py py-class docutils literal notranslate"><span class="pre">Section</span></code></a> with results</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gitflow_linter.report.Section">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">gitflow_linter.report.</span></span><span class="sig-name descname"><span class="pre">Section</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rule</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.report.Section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents repository verification done for a single rule.
+Results are represented by list of <a class="reference internal" href="#gitflow_linter.report.Issue" title="gitflow_linter.report.Issue"><code class="xref py py-class docutils literal notranslate"><span class="pre">Issues</span></code></a>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="gitflow_linter.report.Section.append">
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">issue</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="index.html#gitflow_linter.report.Issue" title="gitflow_linter.report.Issue"><span class="pre">gitflow_linter.report.Issue</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.report.Section.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds new issue detected</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>issue</strong> – New issue detected</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gitflow_linter.report.Issue">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">gitflow_linter.report.</span></span><span class="sig-name descname"><span class="pre">Issue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">gitflow_linter.report.Level</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.report.Issue" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="gitflow_linter.report.Issue.error">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.report.Issue.error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates an <code class="docutils literal notranslate"><span class="pre">Issue</span></code> with ERROR severity</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gitflow_linter.report.Issue.info">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.report.Issue.info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates an <code class="docutils literal notranslate"><span class="pre">Issue</span></code> with INFO severity</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gitflow_linter.report.Issue.warning">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">warning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.report.Issue.warning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates an <code class="docutils literal notranslate"><span class="pre">Issue</span></code> with WARNING severity</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</div>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html#document-about">About</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html#document-quickstart">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html#document-settings">Settings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html#document-rules">Rules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html#document-results">Results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html#document-plugins">Plugins</a></li>
+</ul>
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="nav-item nav-item-0"><a href="#">gitflow_linter 0.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">gitflow_linter 0.0.1 documentation</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2021, Poul Fighter.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+    </div>
+  </body>
+</html>
