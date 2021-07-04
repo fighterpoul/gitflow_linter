@@ -6,7 +6,7 @@ gitflow-linter is command line tool written in Python. It checks given repositor
 
 What is Gitflow? [Based on Atlassian:](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow)
 
-> The Gitflow Workflow defines a **strict branching model** designed around the project release. This provides a robust framework for managing larger projects.
+> The Gitflow Workflow defines a **strict branching model** designed around the project release.
 
 > […]
 
@@ -32,14 +32,6 @@ python setup.py install
 ## Usages
 
 ```
-Usage: gitflow-linter [OPTIONS] GIT_DIRECTORY
-
-  Evaluate given repository and check if gitflow is respected
-
-Options:
-  -s, --settings FILENAME
-  -o, --output [console|json]
-  --help                       Show this message and exit.
 Usage: gitflow-linter [OPTIONS] GIT_DIRECTORY
 
   Evaluate given repository and check if gitflow is respected

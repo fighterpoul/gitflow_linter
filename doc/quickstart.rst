@@ -17,6 +17,7 @@ Usages
 ------
 
 .. literalinclude:: help.txt
+    :language: console
 
 Standard use case looks pretty simple:
 
