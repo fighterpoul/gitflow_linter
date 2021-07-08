@@ -1,7 +1,7 @@
 import os
 from abc import ABC, abstractmethod
 
-from git import Repo, Remote, RemoteReference
+from git import Repo, Remote, RemoteReference, Commit
 from git.util import IterableList
 
 from gitflow_linter import Gitflow
@@ -17,6 +17,8 @@ class Repository:
     def assert_repo(self):
         if self.repo.bare:
             raise Exception('Given directory {} does not contain valid GIT repository.'.format(self.repo.working_dir))
+        if self.repo.is_dirty(untracked_files=False):
+            raise Exception('Given repository {} is dirty.'.format(self.repo.working_dir))
         if len(self.repo.remotes) > 1:
             raise Exception(
                 'Repo contains more than one remote: [{}]'.format(', '.join([r.name for r in self.repo.remotes])))
@@ -41,14 +43,33 @@ class Repository:
     def dev(self) -> RemoteReference:
         return self.repo.heads[self.gitflow.dev]
 
-    def commits_in_branch(self, branch: RemoteReference) -> IterableList:
-        heads_commits = [head.commit for head in self.branches()]
-        all_commits = iter(self.repo.iter_commits(branch.name, max_count=300))
-        commits = [next(all_commits)]
-        for commit in all_commits:
-            if commit in heads_commits:
+    def unique_commits_for_branch(self, branch: RemoteReference, force_including_head=True) -> set[Commit]:
+        """
+        Returns set of unique commits for the given branch. Only commits that appear specifically on the branch will be
+        returned. If a commit is included in the given branch and any other branch, it won't be taken into
+        consideration.
+
+        :param branch: the commits specific to the branch will be returned
+        :param force_including_head: the flag will force including head commit of the branch. If a second branch has been started from branch passed as param, the flag set to True will ensure, that at least the one head commit will be returned, otherwise second/child branch will "consume" all commits and none will be considered as unique for the given branch.
+        :return: set of unique commits for branch passed as the
+
+        """
+        other_heads = [head for head in self.branches() if not head.name == branch.name]
+        all_commits = list(self.repo.iter_commits(branch.name, max_count=100))
+        commits = set(all_commits)
+
+        def _remove_commits_exist_in(other_branch: RemoteReference):
+            other_branch_commits = self.repo.iter_commits(other_branch.name, max_count=100)
+            for c in other_branch_commits:
+                element = next((commit for commit in commits if commit.hexsha == c.hexsha), None)
+                if element and (not force_including_head or element.hexsha != branch.commit.hexsha):
+                    commits.remove(element)
+
+        for other_branch in other_heads:
+            _remove_commits_exist_in(other_branch=other_branch)
+            if not commits:
                 break
-            commits.append(commit)
+
         return commits
 
     def raw_query(self, query: callable, predicate: callable = None, map_line: callable = None):

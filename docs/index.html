@@ -79,7 +79,7 @@ python setup.py install</pre>
 <h2>Settings<a class="headerlink" href="#settings" title="Permalink to this headline">¶</a></h2>
 <p>You can manipulate how linter works by using yaml file with settings.</p>
 <ul class="simple">
-<li><p>place the in a root folder of your repo as gitflow_linter.yaml</p></li>
+<li><p>place the settings file in a root folder of your repo as gitflow_linter.yaml</p></li>
 </ul>
 <pre class="literal-block">repo_dir/
 |__ .git/
@@ -275,6 +275,25 @@ eg. when query returns list of name of branches, you can map them to branch obje
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>list of lines returned by query that matches optional predicate,
 eg. <code class="docutils literal notranslate"><span class="pre">[&quot;sha-of-commit1&quot;,</span> <span class="pre">&quot;sha-of-commit2&quot;,</span> <span class="pre">...]</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gitflow_linter.repository.Repository.unique_commits_for_branch">
+<span class="sig-name descname"><span class="pre">unique_commits_for_branch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">branch</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">git.refs.remote.RemoteReference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_including_head</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">set</span><a class="headerlink" href="#gitflow_linter.repository.Repository.unique_commits_for_branch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns set of unique commits for the given branch. Only commits that appear specifically on the branch will be
+returned. If a commit is included in the given branch and any other branch, it won’t be taken into
+consideration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>branch</strong> – the commits specific to the branch will be returned</p></li>
+<li><p><strong>force_including_head</strong> – the flag will force including head commit of the branch. If a second branch has been started from branch passed as param, the flag set to True will ensure, that at least the one head commit will be returned, otherwise second/child branch will “consume” all commits and none will be considered as unique for the branch.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>set of unique commits for branch passed as the</p>
 </dd>
 </dl>
 </dd></dl>
