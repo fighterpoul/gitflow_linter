@@ -3,7 +3,7 @@ Settings
 
 You can manipulate how linter works by using yaml file with settings.
 
-* place the in a root folder of your repo as |settings_file|
+* place the settings file in a root folder of your repo as |settings_file|
 
 .. parsed-literal::
 
