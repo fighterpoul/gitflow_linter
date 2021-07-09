@@ -20,7 +20,17 @@ And this is when gitflow-linter can help ;-)
 
 ## Installation
 
-You can install the linter from the source code
+You can install the linter from
+
+
+* pip
+
+```
+pip install gitflow-linter
+```
+
+
+* or the source code
 
 ```
 git clone [https://github.com/fighterpoul/gitflow_linter.git](https://github.com/fighterpoul/gitflow_linter.git)
@@ -49,6 +59,8 @@ gitflow-linter /path/to/git/repository
 ```
 
 **WARNING**: URL to a remote is not supported. Passing [https://github.com/fighterpoul/gitflow_linter.git](https://github.com/fighterpoul/gitflow_linter.git) as the argument will fail.
+
+**HINT**: Run `git fetch --prune` before to make the repo clean and clear
 
 # Documentation
 

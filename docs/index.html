@@ -49,7 +49,14 @@
 <h2>Quick Start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h2>
 <section id="installation">
 <h3>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h3>
-<p>You can install the linter from the source code</p>
+<p>You can install the linter from</p>
+<ul class="simple">
+<li><p>pip</p></li>
+</ul>
+<pre class="literal-block">pip install gitflow-linter</pre>
+<ul class="simple">
+<li><p>or the source code</p></li>
+</ul>
 <pre class="literal-block">git clone <a class="reference external" href="https://github.com/fighterpoul/gitflow_linter.git">https://github.com/fighterpoul/gitflow_linter.git</a>
 cd gitflow_linter
 git checkout 0.0.1
@@ -72,6 +79,10 @@ python setup.py install</pre>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>URL to a remote is not supported. Passing <a class="reference external" href="https://github.com/fighterpoul/gitflow_linter.git">https://github.com/fighterpoul/gitflow_linter.git</a> as the argument will fail.</p>
+</div>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>Run <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">fetch</span> <span class="pre">--prune</span></code> before to make the repo clean and clear</p>
 </div>
 </section>
 </section>
@@ -211,7 +222,7 @@ may result in ugly issues during code review and merge mistakes</p>
 <p>gitflow-linter is by design open for extensions, you can write a plugin and define your own rules as well as override implementation of existing ones.</p>
 <div class="admonition hint">
 <p class="admonition-title">Hint</p>
-<p>The module that is installed and has name <cite>gitflow_{name}_linter</cite> will be considered as a plugin. Consider checking official plugin <code class="docutils literal notranslate"><span class="pre">gitflow_authors_linter</span></code>.</p>
+<p>The module that is installed and has name <cite>gitflow_{name}_linter</cite> will be considered as a plugin.</p>
 </div>
 <section id="general-principles">
 <h3>General principles<a class="headerlink" href="#general-principles" title="Permalink to this headline">¶</a></h3>
@@ -289,7 +300,7 @@ consideration.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>branch</strong> – the commits specific to the branch will be returned</p></li>
-<li><p><strong>force_including_head</strong> – the flag will force including head commit of the branch. If a second branch has been started from branch passed as param, the flag set to True will ensure, that at least the one head commit will be returned, otherwise second/child branch will “consume” all commits and none will be considered as unique for the branch.</p></li>
+<li><p><strong>force_including_head</strong> – the flag will force including head commit of the branch. If a second branch has been started from branch passed as param, the flag set to True will ensure, that at least the one head commit will be returned, otherwise second/child branch will “consume” all commits and none will be considered as unique for the given branch.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>

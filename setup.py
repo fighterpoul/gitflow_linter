@@ -12,7 +12,7 @@ def read(fname):
 setup(
     name='gitflow_linter',
     version='0.0.1',
-    description='Checks if GitFlow is respected in a given repository, considering rules provided',
+    description='Checks if GitFlow is respected in a given repository, considering provided rules',
     long_description=read("README.md"),
     long_description_content_type='text/markdown',
     author='Poul Fighter',
@@ -32,8 +32,8 @@ setup(
     python_requires='>3.8',
     license="MIT",
     install_requires=[
-        'pyyaml>=5.4.1,<6',
-        'gitpython>=3.1.17,<4',
-        'click>=7,<8',
+        'PyYAML>=5.4.1',
+        'GitPython>=3.1.17',
+        'click>=7',
     ]
 )
