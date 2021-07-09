@@ -15,6 +15,7 @@ setup(
     description='Checks if GitFlow is respected in a given repository, considering provided rules',
     long_description=read("README.md"),
     long_description_content_type='text/markdown',
+    url='https://github.com/fighterpoul/gitflow_linter',
     author='Poul Fighter',
     author_email='fighter.poul@gmail.com',
     packages=find_packages(exclude=["tests"]),
