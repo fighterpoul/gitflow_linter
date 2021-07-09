@@ -22,5 +22,5 @@ or
 
 Example file:
 
-.. literalinclude:: ../rules.yaml
+.. literalinclude:: ../gitflow_linter.yaml
     :language: yaml
