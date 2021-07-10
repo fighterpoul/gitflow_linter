@@ -17,6 +17,10 @@ class Repository:
     def assert_repo(self):
         if self.repo.bare:
             raise Exception('Given directory {} does not contain valid GIT repository.'.format(self.repo.working_dir))
+        if not self.branch(self.gitflow.dev):
+            raise Exception('Given repository {} does not contain expected {} branch'.format(self.repo.working_dir, self.gitflow.dev))
+        if not self.branch(self.gitflow.master):
+            raise Exception('Given repository {} does not contain expected {} branch'.format(self.repo.working_dir, self.gitflow.master))
         if self.repo.is_dirty(untracked_files=False):
             raise Exception('Given repository {} is dirty.'.format(self.repo.working_dir))
         if len(self.repo.remotes) > 1:
@@ -36,8 +40,8 @@ class Repository:
         return next(iter([r for r in self.remote.refs if r.name.startswith(path)]), None)
 
     @property
-    def main(self) -> RemoteReference:
-        return self.repo.heads[self.gitflow.main]
+    def master(self) -> RemoteReference:
+        return self.repo.heads[self.gitflow.master]
 
     @property
     def dev(self) -> RemoteReference:

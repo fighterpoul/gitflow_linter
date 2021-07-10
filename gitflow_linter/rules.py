@@ -9,7 +9,7 @@ class AttributeDict(dict):
 
 
 _defaults = AttributeDict({
-        "main": "master",
+        "master": "master",
         "dev": "develop",
         "features": "feature",
         "fixes": "bugfix",

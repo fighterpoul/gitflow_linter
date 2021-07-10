@@ -69,7 +69,7 @@ class StatsRepositoryVisitor(RepositoryVisitor):
 
         return {
             "references": {
-                "main": names(branches=repo.branches(folder=self.gitflow.main)),
+                "master": names(branches=repo.branches(folder=self.gitflow.master)),
                 "dev": names(branches=repo.branches(folder=self.gitflow.dev)),
                 "features": names(branches=repo.branches(folder=self.gitflow.features)),
                 "fixes": names(branches=repo.branches(folder=self.gitflow.fixes)),
@@ -77,7 +77,7 @@ class StatsRepositoryVisitor(RepositoryVisitor):
                 "hotfixes": names(branches=repo.branches(folder=self.gitflow.hotfixes)),
             },
             "counts": {
-                "main": len(repo.branches(folder=self.gitflow.main)),
+                "master": len(repo.branches(folder=self.gitflow.master)),
                 "dev": len(repo.branches(folder=self.gitflow.dev)),
                 "features": len(repo.branches(folder=self.gitflow.features)),
                 "fixes": len(repo.branches(folder=self.gitflow.fixes)),
@@ -98,9 +98,9 @@ class SingleBranchesVisitor(BaseVisitor):
     def visit(self, repo: Repository, **kwargs) -> Section:
         section = Section(rule=self.rule, title='Checked if repo contains single release history branch and single '
                                                 'integration branch')
-        # TODO add more smart checking
-        if len(repo.branches(folder=self.gitflow.main)) > 1:
-            section.append(Issue.error('Repository contains more than one main branch'))
+        # TODO add smarter checking
+        if len(repo.branches(folder=self.gitflow.master)) > 1:
+            section.append(Issue.error('Repository contains more than one master branch'))
         if len(repo.branches(folder=self.gitflow.dev)) > 1:
             section.append(Issue.error('Repository contains more than one dev branch'))
 
@@ -151,7 +151,7 @@ class NotScopedBranchesVisitor(BaseVisitor):
         expected_prefixes = [
                                 expected_prefix_template.format(remote=repo.remote.name, branch='HEAD'),
                                 expected_prefix_template.format(remote=repo.remote.name,
-                                                                branch=self.gitflow.main),
+                                                                branch=self.gitflow.master),
                                 expected_prefix_template.format(remote=repo.remote.name,
                                                                 branch=self.gitflow.dev),
                                 expected_prefix_template.format(remote=repo.remote.name,
@@ -188,7 +188,7 @@ class MainCommitsAreTaggedVisitor(BaseVisitor):
 
     def visit(self, repo: Repository, **kwargs) -> Section:
         section = Section(rule=self.rule, title='Checked if main repo branch has tagged commits')
-        main_branch = '{}/{}'.format(repo.remote.name, self.gitflow.main)
+        main_branch = '{}/{}'.format(repo.remote.name, self.gitflow.master)
         main_commits = repo.raw_query(
             lambda git: git.log(main_branch, '--merges', '--format=format:%H', '--first-parent'),
             predicate=lambda sha: sha)
@@ -202,7 +202,7 @@ class MainCommitsAreTaggedVisitor(BaseVisitor):
                                        .format(commit=main_commit_not_tagged[:8])))
 
         for tag_not_on_main in tags_not_on_main_branch:
-            section.append(Issue.warning('{commit} commit contains a tag but is not a part of the main branch'
+            section.append(Issue.warning('{commit} commit contains a tag but is not a part of the master branch'
                                          .format(commit=tag_not_on_main[:8])))
 
         return section
@@ -257,7 +257,7 @@ class DeadReleasesVisitor(BaseVisitor):
     def visit(self, repo: Repository, *args, **kwargs) -> Section:
         section = Section(rule=self.rule, title='Checked if repo contains abandoned and not removed releases')
         deadline = datetime.now() - timedelta(days=kwargs['deadline_to_close_release'])
-        main_branch = '{}/{}'.format(repo.remote.name, self.gitflow.main)
+        main_branch = '{}/{}'.format(repo.remote.name, self.gitflow.master)
         release_branch = '{}/{}/'.format(repo.remote.name, self.gitflow.releases)
         hotfix_branch = '{}/{}/'.format(repo.remote.name, self.gitflow.hotfixes)
 
@@ -270,7 +270,7 @@ class DeadReleasesVisitor(BaseVisitor):
                          deadline > dead_release.commit.authored_datetime.replace(tzinfo=None)]
 
         section.extend([Issue.error(
-            '{release} seems abandoned - it has never been merged into the main branch'.format(release=r.name)) for r in
+            '{release} seems abandoned - it has never been merged into the master branch'.format(release=r.name)) for r in
             dead_releases])
 
         return section
