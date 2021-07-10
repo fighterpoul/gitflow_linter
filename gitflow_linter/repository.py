@@ -1,7 +1,7 @@
 import os
 from abc import ABC, abstractmethod
 
-from git import Repo, Remote, RemoteReference, Commit
+from git import Repo, Remote, RemoteReference, Commit, Head
 from git.util import IterableList
 
 from gitflow_linter import Gitflow
@@ -17,8 +17,8 @@ class Repository:
     def assert_repo(self):
         if self.repo.bare:
             raise Exception('Given directory {} does not contain valid GIT repository.'.format(self.repo.working_dir))
-        if not self.branch(self.gitflow.dev):
-            raise Exception('Given repository {} does not contain expected {} branch'.format(self.repo.working_dir, self.gitflow.dev))
+        if not self.branch(self.gitflow.develop):
+            raise Exception('Given repository {} does not contain expected {} branch'.format(self.repo.working_dir, self.gitflow.develop))
         if not self.branch(self.gitflow.master):
             raise Exception('Given repository {} does not contain expected {} branch'.format(self.repo.working_dir, self.gitflow.master))
         if self.repo.is_dirty(untracked_files=False):
@@ -40,12 +40,12 @@ class Repository:
         return next(iter([r for r in self.remote.refs if r.name.startswith(path)]), None)
 
     @property
-    def master(self) -> RemoteReference:
+    def master(self) -> Head:
         return self.repo.heads[self.gitflow.master]
 
     @property
-    def dev(self) -> RemoteReference:
-        return self.repo.heads[self.gitflow.dev]
+    def develop(self) -> Head:
+        return self.repo.heads[self.gitflow.develop]
 
     def unique_commits_for_branch(self, branch: RemoteReference, force_including_head=True) -> set[Commit]:
         """

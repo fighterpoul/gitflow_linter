@@ -1,6 +1,6 @@
 branches: # optional, defines how your gitflow is configured
   master: master
-  dev: develop
+  develop: develop
   features: feature
   fixes: bugfix
   releases: release

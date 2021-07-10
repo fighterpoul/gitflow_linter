@@ -70,7 +70,7 @@ class StatsRepositoryVisitor(RepositoryVisitor):
         return {
             "references": {
                 "master": names(branches=repo.branches(folder=self.gitflow.master)),
-                "dev": names(branches=repo.branches(folder=self.gitflow.dev)),
+                "develop": names(branches=repo.branches(folder=self.gitflow.develop)),
                 "features": names(branches=repo.branches(folder=self.gitflow.features)),
                 "fixes": names(branches=repo.branches(folder=self.gitflow.fixes)),
                 "releases": names(branches=repo.branches(folder=self.gitflow.releases)),
@@ -78,7 +78,7 @@ class StatsRepositoryVisitor(RepositoryVisitor):
             },
             "counts": {
                 "master": len(repo.branches(folder=self.gitflow.master)),
-                "dev": len(repo.branches(folder=self.gitflow.dev)),
+                "develop": len(repo.branches(folder=self.gitflow.develop)),
                 "features": len(repo.branches(folder=self.gitflow.features)),
                 "fixes": len(repo.branches(folder=self.gitflow.fixes)),
                 "releases": len(repo.branches(folder=self.gitflow.releases)),
@@ -101,8 +101,8 @@ class SingleBranchesVisitor(BaseVisitor):
         # TODO add smarter checking
         if len(repo.branches(folder=self.gitflow.master)) > 1:
             section.append(Issue.error('Repository contains more than one master branch'))
-        if len(repo.branches(folder=self.gitflow.dev)) > 1:
-            section.append(Issue.error('Repository contains more than one dev branch'))
+        if len(repo.branches(folder=self.gitflow.develop)) > 1:
+            section.append(Issue.error('Repository contains more than one develop branch'))
 
         return section
 
@@ -120,7 +120,7 @@ class OldDevelopmentBranchesVisitor(BaseVisitor):
     def visit(self, repo: Repository, **kwargs) -> Section:
         section = Section(rule=self.rule, title='Checked if repo contains abandoned feature branches')
         deadline = datetime.now() - timedelta(days=kwargs['max_days_features'])
-        merged_branches = repo.raw_query(lambda git: git.branch('-r', '--merged', repo.dev.name))
+        merged_branches = repo.raw_query(lambda git: git.branch('-r', '--merged', repo.develop.name))
 
         def _check_for_issues(branches: IterableList, name: str):
             for branch in branches:
@@ -153,7 +153,7 @@ class NotScopedBranchesVisitor(BaseVisitor):
                                 expected_prefix_template.format(remote=repo.remote.name,
                                                                 branch=self.gitflow.master),
                                 expected_prefix_template.format(remote=repo.remote.name,
-                                                                branch=self.gitflow.dev),
+                                                                branch=self.gitflow.develop),
                                 expected_prefix_template.format(remote=repo.remote.name,
                                                                 branch=self.gitflow.features),
                                 expected_prefix_template.format(remote=repo.remote.name,
@@ -290,9 +290,9 @@ class DependantFeaturesVisitor(BaseVisitor):
     @arguments_checker(['max_dependant_branches'])
     def visit(self, repo: Repository, *args, **kwargs) -> Section:
         section = Section(rule=self.rule, title='Checked if repo contains dependant feature branches')
-        dev_branch = '{}/{}'.format(repo.remote.name, self.gitflow.dev)
+        dev_branch = '{}/{}'.format(repo.remote.name, self.gitflow.develop)
         max_dependant_branches = int(kwargs['max_dependant_branches'])
-        merged_branches = repo.raw_query(lambda git: git.branch('-r', '--merged', repo.dev.name))
+        merged_branches = repo.raw_query(lambda git: git.branch('-r', '--merged', repo.develop.name))
         not_merged = [repo.branch(b.name) for b in repo.branches(self.gitflow.features) if
                       b.name not in merged_branches]
         branch_issue_format = '{} seems to depend on other feature branches. It contains following merges: ' + os.linesep + '{}'
@@ -304,7 +304,7 @@ class DependantFeaturesVisitor(BaseVisitor):
             merge_commits_sha = [commit_sha.strip() for commit_sha in merge_commits_query]
             merge_commits_in_feature = [commit for commit in repo.repo.iter_commits(name, max_count=200) if
                                         commit.hexsha in merge_commits_sha]
-            branch_issues = [commit for commit in merge_commits_in_feature if self.gitflow.dev not in commit.message]
+            branch_issues = [commit for commit in merge_commits_in_feature if self.gitflow.develop not in commit.message]
 
             if branch_issues:
                 is_limit_exceeded = len(branch_issues) > max_dependant_branches
