@@ -1,0 +1,2 @@
+Available gitflow-linter plugins:
+No plugins found.

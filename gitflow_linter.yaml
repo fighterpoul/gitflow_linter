@@ -1,0 +1,22 @@
+branches: # optional, defines how your gitflow is configured
+  master: master
+  develop: develop
+  features: feature
+  fixes: bugfix
+  releases: release
+  hotfixes: hotfix
+  others:
+    - spike
+
+rules: # mandatory, defines what needs to be validated and how
+  single_master_and_develop:
+  no_old_development_branches:
+    max_days_features: 50
+  no_orphan_branches:
+  master_must_have_tags:
+  version_names_follow_convention:
+    version_regex: ^\d+\.\d+(\.\d+)?$ # standard major.minor(.optional patch) convention
+  no_dead_releases:
+    deadline_to_close_release: 30
+  no_dependant_features:
+    max_dependant_branches: 0
