@@ -22,6 +22,7 @@ def _validate_settings(value, working_dir):
         raise click.BadParameter("Working git directory {} does not contain {} file. ".format(working_dir,
                                                                                               DEFAULT_LINTER_OPTIONS) +
                                  "Please provide path to the settings by using --settings option")
+    return open(potential_settings, 'r')
 
 
 @click.command()

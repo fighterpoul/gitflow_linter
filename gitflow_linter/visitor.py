@@ -69,16 +69,16 @@ class StatsRepositoryVisitor(RepositoryVisitor):
 
         return {
             "references": {
-                "main": names(branches=repo.branches(folder=self.gitflow.main)),
-                "dev": names(branches=repo.branches(folder=self.gitflow.dev)),
+                "master": names(branches=repo.branches(folder=self.gitflow.master)),
+                "develop": names(branches=repo.branches(folder=self.gitflow.develop)),
                 "features": names(branches=repo.branches(folder=self.gitflow.features)),
                 "fixes": names(branches=repo.branches(folder=self.gitflow.fixes)),
                 "releases": names(branches=repo.branches(folder=self.gitflow.releases)),
                 "hotfixes": names(branches=repo.branches(folder=self.gitflow.hotfixes)),
             },
             "counts": {
-                "main": len(repo.branches(folder=self.gitflow.main)),
-                "dev": len(repo.branches(folder=self.gitflow.dev)),
+                "master": len(repo.branches(folder=self.gitflow.master)),
+                "develop": len(repo.branches(folder=self.gitflow.develop)),
                 "features": len(repo.branches(folder=self.gitflow.features)),
                 "fixes": len(repo.branches(folder=self.gitflow.fixes)),
                 "releases": len(repo.branches(folder=self.gitflow.releases)),
@@ -98,11 +98,11 @@ class SingleBranchesVisitor(BaseVisitor):
     def visit(self, repo: Repository, **kwargs) -> Section:
         section = Section(rule=self.rule, title='Checked if repo contains single release history branch and single '
                                                 'integration branch')
-        # TODO add more smart checking
-        if len(repo.branches(folder=self.gitflow.main)) > 1:
-            section.append(Issue.error('Repository contains more than one main branch'))
-        if len(repo.branches(folder=self.gitflow.dev)) > 1:
-            section.append(Issue.error('Repository contains more than one dev branch'))
+        # TODO add smarter checking
+        if len(repo.branches(folder=self.gitflow.master)) > 1:
+            section.append(Issue.error('Repository contains more than one master branch'))
+        if len(repo.branches(folder=self.gitflow.develop)) > 1:
+            section.append(Issue.error('Repository contains more than one develop branch'))
 
         return section
 
@@ -120,7 +120,7 @@ class OldDevelopmentBranchesVisitor(BaseVisitor):
     def visit(self, repo: Repository, **kwargs) -> Section:
         section = Section(rule=self.rule, title='Checked if repo contains abandoned feature branches')
         deadline = datetime.now() - timedelta(days=kwargs['max_days_features'])
-        merged_branches = repo.raw_query(lambda git: git.branch('-r', '--merged', repo.dev.name))
+        merged_branches = repo.raw_query(lambda git: git.branch('-r', '--merged', repo.develop.name))
 
         def _check_for_issues(branches: IterableList, name: str):
             for branch in branches:
@@ -151,9 +151,9 @@ class NotScopedBranchesVisitor(BaseVisitor):
         expected_prefixes = [
                                 expected_prefix_template.format(remote=repo.remote.name, branch='HEAD'),
                                 expected_prefix_template.format(remote=repo.remote.name,
-                                                                branch=self.gitflow.main),
+                                                                branch=self.gitflow.master),
                                 expected_prefix_template.format(remote=repo.remote.name,
-                                                                branch=self.gitflow.dev),
+                                                                branch=self.gitflow.develop),
                                 expected_prefix_template.format(remote=repo.remote.name,
                                                                 branch=self.gitflow.features),
                                 expected_prefix_template.format(remote=repo.remote.name,
@@ -188,7 +188,7 @@ class MainCommitsAreTaggedVisitor(BaseVisitor):
 
     def visit(self, repo: Repository, **kwargs) -> Section:
         section = Section(rule=self.rule, title='Checked if main repo branch has tagged commits')
-        main_branch = '{}/{}'.format(repo.remote.name, self.gitflow.main)
+        main_branch = '{}/{}'.format(repo.remote.name, self.gitflow.master)
         main_commits = repo.raw_query(
             lambda git: git.log(main_branch, '--merges', '--format=format:%H', '--first-parent'),
             predicate=lambda sha: sha)
@@ -202,7 +202,7 @@ class MainCommitsAreTaggedVisitor(BaseVisitor):
                                        .format(commit=main_commit_not_tagged[:8])))
 
         for tag_not_on_main in tags_not_on_main_branch:
-            section.append(Issue.warning('{commit} commit contains a tag but is not a part of the main branch'
+            section.append(Issue.warning('{commit} commit contains a tag but is not a part of the master branch'
                                          .format(commit=tag_not_on_main[:8])))
 
         return section
@@ -257,7 +257,7 @@ class DeadReleasesVisitor(BaseVisitor):
     def visit(self, repo: Repository, *args, **kwargs) -> Section:
         section = Section(rule=self.rule, title='Checked if repo contains abandoned and not removed releases')
         deadline = datetime.now() - timedelta(days=kwargs['deadline_to_close_release'])
-        main_branch = '{}/{}'.format(repo.remote.name, self.gitflow.main)
+        main_branch = '{}/{}'.format(repo.remote.name, self.gitflow.master)
         release_branch = '{}/{}/'.format(repo.remote.name, self.gitflow.releases)
         hotfix_branch = '{}/{}/'.format(repo.remote.name, self.gitflow.hotfixes)
 
@@ -270,7 +270,7 @@ class DeadReleasesVisitor(BaseVisitor):
                          deadline > dead_release.commit.authored_datetime.replace(tzinfo=None)]
 
         section.extend([Issue.error(
-            '{release} seems abandoned - it has never been merged into the main branch'.format(release=r.name)) for r in
+            '{release} seems abandoned - it has never been merged into the master branch'.format(release=r.name)) for r in
             dead_releases])
 
         return section
@@ -290,9 +290,9 @@ class DependantFeaturesVisitor(BaseVisitor):
     @arguments_checker(['max_dependant_branches'])
     def visit(self, repo: Repository, *args, **kwargs) -> Section:
         section = Section(rule=self.rule, title='Checked if repo contains dependant feature branches')
-        dev_branch = '{}/{}'.format(repo.remote.name, self.gitflow.dev)
+        dev_branch = '{}/{}'.format(repo.remote.name, self.gitflow.develop)
         max_dependant_branches = int(kwargs['max_dependant_branches'])
-        merged_branches = repo.raw_query(lambda git: git.branch('-r', '--merged', repo.dev.name))
+        merged_branches = repo.raw_query(lambda git: git.branch('-r', '--merged', repo.develop.name))
         not_merged = [repo.branch(b.name) for b in repo.branches(self.gitflow.features) if
                       b.name not in merged_branches]
         branch_issue_format = '{} seems to depend on other feature branches. It contains following merges: ' + os.linesep + '{}'
@@ -304,7 +304,7 @@ class DependantFeaturesVisitor(BaseVisitor):
             merge_commits_sha = [commit_sha.strip() for commit_sha in merge_commits_query]
             merge_commits_in_feature = [commit for commit in repo.repo.iter_commits(name, max_count=200) if
                                         commit.hexsha in merge_commits_sha]
-            branch_issues = [commit for commit in merge_commits_in_feature if self.gitflow.dev not in commit.message]
+            branch_issues = [commit for commit in merge_commits_in_feature if self.gitflow.develop not in commit.message]
 
             if branch_issues:
                 is_limit_exceeded = len(branch_issues) > max_dependant_branches

@@ -4,7 +4,7 @@ Plugins
 |command| is by design open for extensions, you can write a plugin and define your own rules as well as override implementation of existing ones.
 
 .. hint::
-    The module that is installed and has name `gitflow_{name}_linter` will be considered as a plugin. Consider checking official plugin ``gitflow_authors_linter``.
+    The module that is installed and has name `gitflow_{name}_linter` will be considered as a plugin.
 
 General principles
 ------------------

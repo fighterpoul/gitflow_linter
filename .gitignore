@@ -1,4 +1,6 @@
 .idea/
 __pycache__/
 *.egg-info/
-doc/_build
+docs/_build
+dist/
+build/

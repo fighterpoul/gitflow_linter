@@ -6,7 +6,7 @@ gitflow-linter is command line tool written in Python. It checks given repositor
 
 What is Gitflow? [Based on Atlassian:](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow)
 
-> The Gitflow Workflow defines a **strict branching model** designed around the project release. This provides a robust framework for managing larger projects.
+> The Gitflow Workflow defines a **strict branching model** designed around the project release.
 
 > […]
 
@@ -20,7 +20,17 @@ And this is when gitflow-linter can help ;-)
 
 ## Installation
 
-You can install the linter from the source code
+You can install the linter from
+
+
+* pip
+
+```
+pip install gitflow-linter
+```
+
+
+* or the source code
 
 ```
 git clone [https://github.com/fighterpoul/gitflow_linter.git](https://github.com/fighterpoul/gitflow_linter.git)
@@ -40,14 +50,6 @@ Options:
   -s, --settings FILENAME
   -o, --output [console|json]
   --help                       Show this message and exit.
-Usage: gitflow-linter [OPTIONS] GIT_DIRECTORY
-
-  Evaluate given repository and check if gitflow is respected
-
-Options:
-  -s, --settings FILENAME
-  -o, --output [console|json]
-  --help                       Show this message and exit.
 ```
 
 Standard use case looks pretty simple:
@@ -58,9 +60,11 @@ gitflow-linter /path/to/git/repository
 
 **WARNING**: URL to a remote is not supported. Passing [https://github.com/fighterpoul/gitflow_linter.git](https://github.com/fighterpoul/gitflow_linter.git) as the argument will fail.
 
+**HINT**: Run `git fetch --prune` before to make the repo clean and clear
+
 # Documentation
 
-A bit more detailed documentation [can be found here](https://fighterpoul.github.io/gitflow-linter)
+A bit more detailed documentation can be found here: [https://fighterpoul.github.io/gitflow_linter/](https://fighterpoul.github.io/gitflow_linter/)
 
 # License
 

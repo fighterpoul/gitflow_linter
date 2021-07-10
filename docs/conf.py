@@ -60,11 +60,13 @@ rst_epilog = """
 .. |project| replace:: {project}
 .. |command| replace:: {command}
 .. |url| replace:: {url}
+.. |doc_url| replace:: {doc_url}
 .. |settings_file| replace:: {settings_file}
 """.format(
-    versionnum=release,
+    versionnum=gitflow_linter.__version__,
     project=project,
     command=command,
     url=url,
+    doc_url='https://fighterpoul.github.io/gitflow_linter/',
     settings_file=gitflow_linter.DEFAULT_LINTER_OPTIONS,
 )
