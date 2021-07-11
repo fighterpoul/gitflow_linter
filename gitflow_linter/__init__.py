@@ -10,7 +10,7 @@ from gitflow_linter import output
 from gitflow_linter.rules import RulesContainer, Gitflow
 
 DEFAULT_LINTER_OPTIONS = 'gitflow_linter.yaml'
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 
 def _validate_settings(value, working_dir):
@@ -32,7 +32,11 @@ def _validate_settings(value, working_dir):
 @click.option('-s', '--settings', type=click.File(mode='r', encoding=None, errors='strict', lazy=None, atomic=False))
 @click.option('-o', '--output', 'out',
               type=click.Choice(output.outputs.keys(), case_sensitive=False), default=next(iter(output.outputs.keys())))
-def main(git_directory, settings, out):
+@click.option('-p', '--fetch-prune', 'fetch', is_flag=True, default=False, help="Linter will refresh the repo before "
+                                                                                "checking")
+@click.option('-d', '--allow-dirty', is_flag=True, default=False, help="Linter will ignore the fact that the given "
+                                                                       "repo is considered dirty")
+def main(git_directory, settings, out, fetch, allow_dirty):
     """Evaluate given repository and check if gitflow is respected"""
     from gitflow_linter.report import Report, Section, Issue
     from gitflow_linter.visitor import StatsRepositoryVisitor
@@ -41,7 +45,7 @@ def main(git_directory, settings, out):
     try:
         settings = _validate_settings(settings, working_dir=git_directory)
         gitflow, rules = parse_yaml(settings)
-        repo = Repository(Repo(git_directory), gitflow=gitflow)
+        repo = Repository(Repo(git_directory), gitflow=gitflow, should_fetch=fetch, allow_dirty=allow_dirty)
         report = Report(working_dir=git_directory, stats=repo.apply(StatsRepositoryVisitor(gitflow=gitflow)), sections=[])
 
         visitors = __get_all_visitors(gitflow=gitflow, rules=rules)
@@ -77,7 +81,7 @@ def parse_yaml(settings):
     return gitflow, rules
 
 
-def __get_all_visitors(gitflow, rules) -> dict:
+def __get_all_visitors(gitflow: Gitflow, rules: RulesContainer) -> dict:
     from gitflow_linter import visitor
     from gitflow_linter import plugins
     visitors = [visitor for visitor in visitor.visitors(gitflow=gitflow) if visitor.rule in rules.rules]

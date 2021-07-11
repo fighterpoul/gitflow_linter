@@ -35,7 +35,7 @@ pip install gitflow-linter
 ```
 git clone [https://github.com/fighterpoul/gitflow_linter.git](https://github.com/fighterpoul/gitflow_linter.git)
 cd gitflow_linter
-git checkout 0.0.1
+git checkout 0.0.2
 python setup.py install
 ```
 
@@ -49,6 +49,10 @@ Usage: gitflow-linter [OPTIONS] GIT_DIRECTORY
 Options:
   -s, --settings FILENAME
   -o, --output [console|json]
+  -p, --fetch-prune            Linter will refresh the repo before checking
+  -d, --allow-dirty            Linter will ignore the fact that the given repo
+                               is considered dirty
+
   --help                       Show this message and exit.
 ```
 

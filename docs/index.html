@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>gitflow_linter 0.0.1 documentation</title>
+    <title>gitflow_linter 0.0.2 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
@@ -20,8 +20,8 @@
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
-        <li class="nav-item nav-item-0"><a href="#">gitflow_linter 0.0.1 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">gitflow_linter 0.0.1 documentation</a></li> 
+        <li class="nav-item nav-item-0"><a href="#">gitflow_linter 0.0.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">gitflow_linter 0.0.2 documentation</a></li> 
       </ul>
     </div>  
 
@@ -59,7 +59,7 @@
 </ul>
 <pre class="literal-block">git clone <a class="reference external" href="https://github.com/fighterpoul/gitflow_linter.git">https://github.com/fighterpoul/gitflow_linter.git</a>
 cd gitflow_linter
-git checkout 0.0.1
+git checkout 0.0.2
 python setup.py install</pre>
 </section>
 <section id="usages">
@@ -71,6 +71,10 @@ python setup.py install</pre>
 <span class="go">Options:</span>
 <span class="go">  -s, --settings FILENAME</span>
 <span class="go">  -o, --output [console|json]</span>
+<span class="go">  -p, --fetch-prune            Linter will refresh the repo before checking</span>
+<span class="go">  -d, --allow-dirty            Linter will ignore the fact that the given repo</span>
+<span class="go">                               is considered dirty</span>
+
 <span class="go">  --help                       Show this message and exit.</span>
 </pre></div>
 </div>
@@ -267,7 +271,7 @@ Plugin is just a list of visitors that are subscribed to check corresponding rul
 <p>From a plugin perspective, those are the most important classes:</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="gitflow_linter.repository.Repository">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">gitflow_linter.repository.</span></span><span class="sig-name descname"><span class="pre">Repository</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">git.repo.base.Repo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gitflow</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="index.html#gitflow_linter.rules.Gitflow" title="gitflow_linter.rules.Gitflow"><span class="pre">gitflow_linter.rules.Gitflow</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.repository.Repository" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">gitflow_linter.repository.</span></span><span class="sig-name descname"><span class="pre">Repository</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repo</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">git.repo.base.Repo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gitflow</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="index.html#gitflow_linter.rules.Gitflow" title="gitflow_linter.rules.Gitflow"><span class="pre">gitflow_linter.rules.Gitflow</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">should_fetch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_dirty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.repository.Repository" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="py method">
 <dt class="sig sig-object py" id="gitflow_linter.repository.Repository.raw_query">
 <span class="sig-name descname"><span class="pre">raw_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predicate</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">callable</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">map_line</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">callable</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.repository.Repository.raw_query" title="Permalink to this definition">¶</a></dt>
@@ -428,8 +432,8 @@ Results are represented by list of <a class="reference internal" href="#gitflow_
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
-        <li class="nav-item nav-item-0"><a href="#">gitflow_linter 0.0.1 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">gitflow_linter 0.0.1 documentation</a></li> 
+        <li class="nav-item nav-item-0"><a href="#">gitflow_linter 0.0.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">gitflow_linter 0.0.2 documentation</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
