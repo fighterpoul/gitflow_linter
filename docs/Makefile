@@ -25,6 +25,7 @@ documentation:
 	gitflow-linter-plugins > plugins.txt
 	@$(SPHINXBUILD) -M singlehtml "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 	@$(SPHINXBUILD) -M markdown "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	rm "../README.md"
 	cp "$(BUILDDIR)/markdown/readme.md" "../README.md"
 	rm -rf "./_static/"
 	mv -v -f "$(BUILDDIR)/singlehtml"/* "$(SOURCEDIR)"

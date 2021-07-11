@@ -35,7 +35,7 @@ pip install gitflow-linter
 ```
 git clone [https://github.com/fighterpoul/gitflow_linter.git](https://github.com/fighterpoul/gitflow_linter.git)
 cd gitflow_linter
-git checkout 0.0.1
+git checkout 0.0.2
 python setup.py install
 ```
 

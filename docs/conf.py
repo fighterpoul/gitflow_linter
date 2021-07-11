@@ -63,7 +63,7 @@ rst_epilog = """
 .. |doc_url| replace:: {doc_url}
 .. |settings_file| replace:: {settings_file}
 """.format(
-    versionnum=gitflow_linter.__version__,
+    versionnum=release,
     project=project,
     command=command,
     url=url,
