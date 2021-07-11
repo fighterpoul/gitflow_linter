@@ -1,5 +1,5 @@
 bump-version:
-	bumpversion --current-version $(version) patch setup.py gitflow_linter/__init__.py
+	bumpversion --current-version $(version) patch setup.py gitflow_linter/__init__.py docs/conf.py
 
 create-distro:
 	rm dist/*
