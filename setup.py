@@ -11,7 +11,7 @@ def read(fname):
 
 setup(
     name='gitflow_linter',
-    version='0.0.1',
+    version='0.0.2',
     description='Checks if GitFlow is respected in a given repository, considering provided rules',
     long_description=read("README.md"),
     long_description_content_type='text/markdown',
