@@ -8,20 +8,21 @@ from gitflow_linter import Gitflow
 
 
 class Repository:
-    def __init__(self, repo: Repo, gitflow: Gitflow):
+    def __init__(self, repo: Repo, gitflow: Gitflow, should_fetch=False, allow_dirty=False):
         self.repo = repo
         self.gitflow = gitflow
-        self.assert_repo()
-        self.remote.fetch()
+        self.assert_repo(allow_dirty)
+        if should_fetch:
+            self.remote.fetch('--prune')
 
-    def assert_repo(self):
+    def assert_repo(self, allow_dirty: bool):
         if self.repo.bare:
             raise Exception('Given directory {} does not contain valid GIT repository.'.format(self.repo.working_dir))
         if not self.branch(self.gitflow.develop):
             raise Exception('Given repository {} does not contain expected {} branch'.format(self.repo.working_dir, self.gitflow.develop))
         if not self.branch(self.gitflow.master):
             raise Exception('Given repository {} does not contain expected {} branch'.format(self.repo.working_dir, self.gitflow.master))
-        if self.repo.is_dirty(untracked_files=False):
+        if self.repo.is_dirty(untracked_files=False) and not allow_dirty:
             raise Exception('Given repository {} is dirty.'.format(self.repo.working_dir))
         if len(self.repo.remotes) > 1:
             raise Exception(
