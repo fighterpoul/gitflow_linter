@@ -25,10 +25,10 @@ Plugin is just a list of visitors that are subscribed to check corresponding rul
         @gitflow_linter.visitor.arguments_checker('my_awesome_rule_argument')
         def visit(self, repo: gitflow_linter.repository.Repository, args, **kwargs) -> gitflow_linter.report.Section:
             # visit repository and return a ``Section`` with results of inspection
-            # you can read ``Gitflow`` options by using self.settings (eg. name of branches): self.settings.dev
+            # you can read ``Gitflow`` options by using self.gitflow (eg. name of branches): self.gitflow.develop
             # you can read your rule settings by using kwargs['my_awesome_rule_argument']
 
-    def visitors(settings: dict) -> List[gitflow_linter.visitor.BaseVisitor]:
+    def visitors(gitflow: Gitflow) -> List[gitflow_linter.visitor.BaseVisitor]:
         return [MyAwesomeRuleVisitor(settings=settings)]
 
 Example visitor will be ran if :ref:`yaml settings file<Settings>` contains the rule:

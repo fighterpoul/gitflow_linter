@@ -240,6 +240,45 @@ class VersionNamesConventionVisitor(BaseVisitor):
         return section
 
 
+class DevBranchNamesFollowConvention(BaseVisitor):
+    """
+    sometimes you may wish to have feature and bugfix branch names containing eg. ticket numbers
+
+    the given convention is checked by providing ``name_regex`` as an argument
+
+    if you want to provide different conventions for features and bugfixes, use ``feature_name_regex`` and ``bugfix_name_regex`` respectively
+    """
+
+    @property
+    def rule(self) -> str:
+        return 'dev_branches_follow_convention'
+
+    def visit(self, repo: Repository, *args, **kwargs) -> Section:
+        import re
+        features_regex = kwargs.get('name_regex', None) if not kwargs.get('feature_name_regex', None) else kwargs.get(
+            'feature_name_regex')
+        bugfixes_regex = kwargs.get('name_regex', None) if not kwargs.get('bugfix_name_regex', None) else kwargs.get(
+            'bugfix_name_regex')
+        if not features_regex or not bugfixes_regex:
+            raise Exception('Configuration of the rule is invalid: desired convention is not provided')
+
+        feature_prefix = '/'.join([repo.remote.name, self.gitflow.features, ''])
+        bugfix_prefix = '/'.join([repo.remote.name, self.gitflow.fixes, ''])
+
+        def _is_valid(branch: str, regex: str) -> bool:
+            return re.search(regex, branch) is not None
+
+        feature_issuers = [feature.name for feature in repo.branches(self.gitflow.features) if
+                           not _is_valid(branch=feature.name.replace(feature_prefix, ''), regex=features_regex)]
+        bugfix_issuers = [bugfix.name for bugfix in repo.branches(self.gitflow.fixes) if
+                          not _is_valid(branch=bugfix.name.replace(bugfix_prefix, ''), regex=bugfixes_regex)]
+
+        issue_msg_fmt = '{branch} branch does not follow given convention'
+        issues = [Issue.error(issue_msg_fmt.format(branch=branch)) for branch in (feature_issuers + bugfix_issuers)]
+
+        return Section(rule=self.rule, title='Checked if feature and bugfix names follow convention', issues=issues)
+
+
 class DeadReleasesVisitor(BaseVisitor):
     __doc__ = """release branches that are not closed may create a mess in the repository and breaks the master/main 
     branch - releases must be closed as soon as they are deployed to production environment (or just before, 
@@ -270,7 +309,8 @@ class DeadReleasesVisitor(BaseVisitor):
                          deadline > dead_release.commit.authored_datetime.replace(tzinfo=None)]
 
         section.extend([Issue.error(
-            '{release} seems abandoned - it has never been merged into the master branch'.format(release=r.name)) for r in
+            '{release} seems abandoned - it has never been merged into the master branch'.format(release=r.name)) for r
+            in
             dead_releases])
 
         return section
@@ -304,7 +344,8 @@ class DependantFeaturesVisitor(BaseVisitor):
             merge_commits_sha = [commit_sha.strip() for commit_sha in merge_commits_query]
             merge_commits_in_feature = [commit for commit in repo.repo.iter_commits(name, max_count=200) if
                                         commit.hexsha in merge_commits_sha]
-            branch_issues = [commit for commit in merge_commits_in_feature if self.gitflow.develop not in commit.message]
+            branch_issues = [commit for commit in merge_commits_in_feature if
+                             self.gitflow.develop not in commit.message]
 
             if branch_issues:
                 is_limit_exceeded = len(branch_issues) > max_dependant_branches
@@ -323,6 +364,7 @@ def visitors(gitflow: Gitflow) -> List[BaseVisitor]:
         NotScopedBranchesVisitor(gitflow=gitflow),
         MainCommitsAreTaggedVisitor(gitflow=gitflow),
         VersionNamesConventionVisitor(gitflow=gitflow),
+        DevBranchNamesFollowConvention(gitflow=gitflow),
         DeadReleasesVisitor(gitflow=gitflow),
         DependantFeaturesVisitor(gitflow=gitflow),
     ]

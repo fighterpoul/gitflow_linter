@@ -124,6 +124,8 @@ python setup.py install</pre>
   <span class="nt">master_must_have_tags</span><span class="p">:</span>
   <span class="nt">version_names_follow_convention</span><span class="p">:</span>
     <span class="nt">version_regex</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">^\d+\.\d+(\.\d+)?$</span> <span class="c1"># standard major.minor(.optional patch) convention</span>
+  <span class="nt">dev_branches_follow_convention</span><span class="p">:</span>
+    <span class="nt">name_regex</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">^\d+-[\.a-zA-Z0-9_-]+?$</span> <span class="c1"># you may wish to require starting dev branches with eg. ticket numbers</span>
   <span class="nt">no_dead_releases</span><span class="p">:</span>
     <span class="nt">deadline_to_close_release</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">30</span>
   <span class="nt">no_dependant_features</span><span class="p">:</span>
@@ -167,7 +169,13 @@ master as your releases history keeper</p></td>
 <p>the convention must be specified in <code class="docutils literal notranslate"><span class="pre">version_regex</span></code> argument as a regular expression string</p>
 </td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">no_dead_releases</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dev_branches_follow_convention</span></code></p></td>
+<td><p>sometimes you may wish to have feature and bugfix branch names containing eg. ticket numbers</p>
+<p>the given convention is checked by providing <code class="docutils literal notranslate"><span class="pre">name_regex</span></code> as an argument</p>
+<p>if you want to provide different conventions for features and bugfixes use <code class="docutils literal notranslate"><span class="pre">feature_name_regex</span></code> and <code class="docutils literal notranslate"><span class="pre">bugfix_name_regex</span></code> respectively</p>
+</td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">no_dead_releases</span></code></p></td>
 <td><p>release branches that are not closed may create a mess in the repository and breaks the master/main
 branch - releases must be closed as soon as they are deployed to production environment (or just before,
 depending on your case)</p>
@@ -175,7 +183,7 @@ depending on your case)</p>
 <p>configure how long releases are supposed to be maintained by using <code class="docutils literal notranslate"><span class="pre">deadline_to_close_release</span></code> (number of days)</p>
 </td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">no_dependant_features</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">no_dependant_features</span></code></p></td>
 <td><p>creating feature/bugfix branches one from another or merging them together before merging to develop
 may result in ugly issues during code review and merge mistakes</p>
 <p>creating such a feature/merge is sometimes inevitable, you must configure the limit of such branches by using
@@ -262,7 +270,8 @@ Plugin is just a list of visitors that are subscribed to check corresponding rul
 </div>
 <p>To verify if a plugin is properly installed and recognized you can run <code class="docutils literal notranslate"><span class="pre">gitflow-linter-plugins</span></code></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Available</span> <span class="n">gitflow</span><span class="o">-</span><span class="n">linter</span> <span class="n">plugins</span><span class="p">:</span>
-<span class="n">No</span> <span class="n">plugins</span> <span class="n">found</span><span class="o">.</span>
+<span class="o">-</span> <span class="n">gitflow_authors_linter</span> <span class="n">handles</span> <span class="n">following</span> <span class="n">rules</span><span class="p">:</span> 
+	<span class="o">*</span> <span class="n">no_multiple_open_features_per_author</span>
 </pre></div>
 </div>
 </section>
@@ -361,7 +370,7 @@ Plugins can override default visitors by returning the same rule as a visitor th
 
 <dl class="py class">
 <dt class="sig sig-object py" id="gitflow_linter.report.Section">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">gitflow_linter.report.</span></span><span class="sig-name descname"><span class="pre">Section</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rule</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.report.Section" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">gitflow_linter.report.</span></span><span class="sig-name descname"><span class="pre">Section</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rule</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">issues</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="index.html#gitflow_linter.report.Issue" title="gitflow_linter.report.Issue"><span class="pre">gitflow_linter.report.Issue</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.report.Section" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents repository verification done for a single rule.
 Results are represented by list of <a class="reference internal" href="#gitflow_linter.report.Issue" title="gitflow_linter.report.Issue"><code class="xref py py-class docutils literal notranslate"><span class="pre">Issues</span></code></a>.</p>
 <dl class="py method">
