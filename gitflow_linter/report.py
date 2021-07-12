@@ -1,4 +1,5 @@
 import logging
+from typing import List
 from enum import Enum, unique
 
 
@@ -58,10 +59,12 @@ class Section:
     Results are represented by list of :class:`Issues <Issue>`.
     """
 
-    def __init__(self, rule: str, title: str):
+    def __init__(self, rule: str, title: str, issues=None):
+        if issues is None:
+            issues = []
         self.rule = rule
         self.title = title
-        self.issues = []
+        self.issues = issues
 
     def append(self, issue: Issue):
         """
@@ -101,5 +104,6 @@ class Report:
         self.sections.append(section)
 
     def contains_errors(self, are_warnings_errors) -> bool:
-        errors = [section for section in self.sections if section.contains_errors or (are_warnings_errors and section.contains_warns)]
+        errors = [section for section in self.sections if
+                  section.contains_errors or (are_warnings_errors and section.contains_warns)]
         return len(errors) > 0

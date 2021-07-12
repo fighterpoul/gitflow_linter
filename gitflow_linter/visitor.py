@@ -120,7 +120,7 @@ class OldDevelopmentBranchesVisitor(BaseVisitor):
     def visit(self, repo: Repository, **kwargs) -> Section:
         section = Section(rule=self.rule, title='Checked if repo contains abandoned feature branches')
         deadline = datetime.now() - timedelta(days=kwargs['max_days_features'])
-        merged_branches = repo.raw_query(lambda git: git.branch('-r', '--merged', repo.develop.name))
+        merged_branches = repo.raw_query(lambda git: git.branch('-r', '--merged', self.gitflow.develop))
 
         def _check_for_issues(branches: IterableList, name: str):
             for branch in branches:
@@ -188,7 +188,7 @@ class MainCommitsAreTaggedVisitor(BaseVisitor):
 
     def visit(self, repo: Repository, **kwargs) -> Section:
         section = Section(rule=self.rule, title='Checked if main repo branch has tagged commits')
-        main_branch = '{}/{}'.format(repo.remote.name, self.gitflow.master)
+        main_branch = '/'.join([repo.remote.name, self.gitflow.master])
         main_commits = repo.raw_query(
             lambda git: git.log(main_branch, '--merges', '--format=format:%H', '--first-parent'),
             predicate=lambda sha: sha)
@@ -240,6 +240,45 @@ class VersionNamesConventionVisitor(BaseVisitor):
         return section
 
 
+class DevBranchNamesFollowConvention(BaseVisitor):
+    """
+    sometimes you may wish to have feature and bugfix branch names containing eg. ticket numbers
+
+    the given convention is checked by providing ``name_regex`` as an argument
+
+    if you want to provide different conventions for features and bugfixes, use ``feature_name_regex`` and ``bugfix_name_regex`` respectively
+    """
+
+    @property
+    def rule(self) -> str:
+        return 'dev_branch_names_follow_convention'
+
+    def visit(self, repo: Repository, *args, **kwargs) -> Section:
+        import re
+        features_regex = kwargs.get('name_regex', None) if not kwargs.get('feature_name_regex', None) else kwargs.get(
+            'feature_name_regex')
+        bugfixes_regex = kwargs.get('name_regex', None) if not kwargs.get('bugfix_name_regex', None) else kwargs.get(
+            'bugfix_name_regex')
+        if not features_regex or not bugfixes_regex:
+            raise Exception('Configuration of the rule is invalid: desired convention is not provided')
+
+        feature_prefix = '/'.join([repo.remote.name, self.gitflow.features, ''])
+        bugfix_prefix = '/'.join([repo.remote.name, self.gitflow.fixes, ''])
+
+        def _is_valid(branch: str, regex: str) -> bool:
+            return re.search(regex, branch) is not None
+
+        feature_issuers = [feature.name for feature in repo.branches(self.gitflow.features) if
+                           not _is_valid(branch=feature.name.replace(feature_prefix, ''), regex=features_regex)]
+        bugfix_issuers = [bugfix.name for bugfix in repo.branches(self.gitflow.fixes) if
+                          not _is_valid(branch=bugfix.name.replace(bugfix_prefix, ''), regex=bugfixes_regex)]
+
+        issue_msg_fmt = '{branch} branch does not follow given convention'
+        issues = [Issue.error(issue_msg_fmt.format(branch=branch)) for branch in (feature_issuers + bugfix_issuers)]
+
+        return Section(rule=self.rule, title='Checked if feature and bugfix names follow convention', issues=issues)
+
+
 class DeadReleasesVisitor(BaseVisitor):
     __doc__ = """release branches that are not closed may create a mess in the repository and breaks the master/main 
     branch - releases must be closed as soon as they are deployed to production environment (or just before, 
@@ -257,9 +296,9 @@ class DeadReleasesVisitor(BaseVisitor):
     def visit(self, repo: Repository, *args, **kwargs) -> Section:
         section = Section(rule=self.rule, title='Checked if repo contains abandoned and not removed releases')
         deadline = datetime.now() - timedelta(days=kwargs['deadline_to_close_release'])
-        main_branch = '{}/{}'.format(repo.remote.name, self.gitflow.master)
-        release_branch = '{}/{}/'.format(repo.remote.name, self.gitflow.releases)
-        hotfix_branch = '{}/{}/'.format(repo.remote.name, self.gitflow.hotfixes)
+        main_branch = '/'.join([repo.remote.name, self.gitflow.master])
+        release_branch = '/'.join([repo.remote.name, self.gitflow.releases, ''])
+        hotfix_branch = '/'.format([repo.remote.name, self.gitflow.hotfixes, ''])
 
         potential_dead_releases = repo.raw_query(lambda git: git.branch('-r', '--no-merged', main_branch),
                                                  predicate=lambda release: release.strip().startswith(
@@ -270,7 +309,8 @@ class DeadReleasesVisitor(BaseVisitor):
                          deadline > dead_release.commit.authored_datetime.replace(tzinfo=None)]
 
         section.extend([Issue.error(
-            '{release} seems abandoned - it has never been merged into the master branch'.format(release=r.name)) for r in
+            '{release} seems abandoned - it has never been merged into the master branch'.format(release=r.name)) for r
+            in
             dead_releases])
 
         return section
@@ -290,21 +330,22 @@ class DependantFeaturesVisitor(BaseVisitor):
     @arguments_checker(['max_dependant_branches'])
     def visit(self, repo: Repository, *args, **kwargs) -> Section:
         section = Section(rule=self.rule, title='Checked if repo contains dependant feature branches')
-        dev_branch = '{}/{}'.format(repo.remote.name, self.gitflow.develop)
+        dev_branch = '/'.join([repo.remote.name, self.gitflow.develop])
         max_dependant_branches = int(kwargs['max_dependant_branches'])
-        merged_branches = repo.raw_query(lambda git: git.branch('-r', '--merged', repo.develop.name))
+        merged_branches = repo.raw_query(lambda git: git.branch('-r', '--merged', self.gitflow.develop))
         not_merged = [repo.branch(b.name) for b in repo.branches(self.gitflow.features) if
                       b.name not in merged_branches]
         branch_issue_format = '{} seems to depend on other feature branches. It contains following merges: ' + os.linesep + '{}'
 
         for feature in not_merged:
             name = feature.name
-            merge_commits_query = repo.raw_query(lambda git: git.log('{}..{}'.format(dev_branch, name), '--merges',
+            merge_commits_query = repo.raw_query(lambda git: git.log('..'.join([dev_branch, name]), '--merges',
                                                                      '--first-parent', '--format=format:%H'))
             merge_commits_sha = [commit_sha.strip() for commit_sha in merge_commits_query]
             merge_commits_in_feature = [commit for commit in repo.repo.iter_commits(name, max_count=200) if
                                         commit.hexsha in merge_commits_sha]
-            branch_issues = [commit for commit in merge_commits_in_feature if self.gitflow.develop not in commit.message]
+            branch_issues = [commit for commit in merge_commits_in_feature if
+                             self.gitflow.develop not in commit.message]
 
             if branch_issues:
                 is_limit_exceeded = len(branch_issues) > max_dependant_branches
@@ -323,6 +364,7 @@ def visitors(gitflow: Gitflow) -> List[BaseVisitor]:
         NotScopedBranchesVisitor(gitflow=gitflow),
         MainCommitsAreTaggedVisitor(gitflow=gitflow),
         VersionNamesConventionVisitor(gitflow=gitflow),
+        DevBranchNamesFollowConvention(gitflow=gitflow),
         DeadReleasesVisitor(gitflow=gitflow),
         DependantFeaturesVisitor(gitflow=gitflow),
     ]
