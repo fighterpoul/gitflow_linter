@@ -29,7 +29,7 @@ Plugin is just a list of visitors that are subscribed to check corresponding rul
             # you can read your rule settings by using kwargs['my_awesome_rule_argument']
 
     def visitors(gitflow: Gitflow) -> List[gitflow_linter.visitor.BaseVisitor]:
-        return [MyAwesomeRuleVisitor(settings=settings)]
+        return [MyAwesomeRuleVisitor(gitflow=gitflow)]
 
 Example visitor will be ran if :ref:`yaml settings file<Settings>` contains the rule:
 

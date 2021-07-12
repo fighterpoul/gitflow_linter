@@ -59,7 +59,9 @@ class Section:
     Results are represented by list of :class:`Issues <Issue>`.
     """
 
-    def __init__(self, rule: str, title: str, issues: List[Issue] = []):
+    def __init__(self, rule: str, title: str, issues=None):
+        if issues is None:
+            issues = []
         self.rule = rule
         self.title = title
         self.issues = issues

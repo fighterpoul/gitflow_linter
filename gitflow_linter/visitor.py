@@ -120,7 +120,7 @@ class OldDevelopmentBranchesVisitor(BaseVisitor):
     def visit(self, repo: Repository, **kwargs) -> Section:
         section = Section(rule=self.rule, title='Checked if repo contains abandoned feature branches')
         deadline = datetime.now() - timedelta(days=kwargs['max_days_features'])
-        merged_branches = repo.raw_query(lambda git: git.branch('-r', '--merged', repo.develop.name))
+        merged_branches = repo.raw_query(lambda git: git.branch('-r', '--merged', self.gitflow.develop))
 
         def _check_for_issues(branches: IterableList, name: str):
             for branch in branches:
@@ -188,7 +188,7 @@ class MainCommitsAreTaggedVisitor(BaseVisitor):
 
     def visit(self, repo: Repository, **kwargs) -> Section:
         section = Section(rule=self.rule, title='Checked if main repo branch has tagged commits')
-        main_branch = '{}/{}'.format(repo.remote.name, self.gitflow.master)
+        main_branch = '/'.join([repo.remote.name, self.gitflow.master])
         main_commits = repo.raw_query(
             lambda git: git.log(main_branch, '--merges', '--format=format:%H', '--first-parent'),
             predicate=lambda sha: sha)
@@ -251,7 +251,7 @@ class DevBranchNamesFollowConvention(BaseVisitor):
 
     @property
     def rule(self) -> str:
-        return 'dev_branches_follow_convention'
+        return 'dev_branch_names_follow_convention'
 
     def visit(self, repo: Repository, *args, **kwargs) -> Section:
         import re
@@ -296,9 +296,9 @@ class DeadReleasesVisitor(BaseVisitor):
     def visit(self, repo: Repository, *args, **kwargs) -> Section:
         section = Section(rule=self.rule, title='Checked if repo contains abandoned and not removed releases')
         deadline = datetime.now() - timedelta(days=kwargs['deadline_to_close_release'])
-        main_branch = '{}/{}'.format(repo.remote.name, self.gitflow.master)
-        release_branch = '{}/{}/'.format(repo.remote.name, self.gitflow.releases)
-        hotfix_branch = '{}/{}/'.format(repo.remote.name, self.gitflow.hotfixes)
+        main_branch = '/'.join([repo.remote.name, self.gitflow.master])
+        release_branch = '/'.join([repo.remote.name, self.gitflow.releases, ''])
+        hotfix_branch = '/'.format([repo.remote.name, self.gitflow.hotfixes, ''])
 
         potential_dead_releases = repo.raw_query(lambda git: git.branch('-r', '--no-merged', main_branch),
                                                  predicate=lambda release: release.strip().startswith(
@@ -330,16 +330,16 @@ class DependantFeaturesVisitor(BaseVisitor):
     @arguments_checker(['max_dependant_branches'])
     def visit(self, repo: Repository, *args, **kwargs) -> Section:
         section = Section(rule=self.rule, title='Checked if repo contains dependant feature branches')
-        dev_branch = '{}/{}'.format(repo.remote.name, self.gitflow.develop)
+        dev_branch = '/'.join([repo.remote.name, self.gitflow.develop])
         max_dependant_branches = int(kwargs['max_dependant_branches'])
-        merged_branches = repo.raw_query(lambda git: git.branch('-r', '--merged', repo.develop.name))
+        merged_branches = repo.raw_query(lambda git: git.branch('-r', '--merged', self.gitflow.develop))
         not_merged = [repo.branch(b.name) for b in repo.branches(self.gitflow.features) if
                       b.name not in merged_branches]
         branch_issue_format = '{} seems to depend on other feature branches. It contains following merges: ' + os.linesep + '{}'
 
         for feature in not_merged:
             name = feature.name
-            merge_commits_query = repo.raw_query(lambda git: git.log('{}..{}'.format(dev_branch, name), '--merges',
+            merge_commits_query = repo.raw_query(lambda git: git.log('..'.join([dev_branch, name]), '--merges',
                                                                      '--first-parent', '--format=format:%H'))
             merge_commits_sha = [commit_sha.strip() for commit_sha in merge_commits_query]
             merge_commits_in_feature = [commit for commit in repo.repo.iter_commits(name, max_count=200) if

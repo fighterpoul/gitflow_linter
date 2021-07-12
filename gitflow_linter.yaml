@@ -16,7 +16,7 @@ rules: # mandatory, defines what needs to be validated and how
   master_must_have_tags:
   version_names_follow_convention:
     version_regex: ^\d+\.\d+(\.\d+)?$ # standard major.minor(.optional patch) convention
-  dev_branches_follow_convention:
+  dev_branch_names_follow_convention:
     name_regex: ^\d+-[\.a-zA-Z0-9_-]+?$ # you may wish to require starting dev branches with eg. ticket numbers
   no_dead_releases:
     deadline_to_close_release: 30

@@ -20,11 +20,11 @@ Rules
 	"``version_names_follow_convention``","checks if release branches and tags follow version naming convention
     
     the convention must be specified in ``version_regex`` argument as a regular expression string"
-	"``dev_branches_follow_convention``","sometimes you may wish to have feature and bugfix branch names containing eg. ticket numbers
+	"``dev_branch_names_follow_convention``","sometimes you may wish to have feature and bugfix branch names containing eg. ticket numbers
 
     the given convention is checked by providing ``name_regex`` as an argument
 
-    if you want to provide different conventions for features and bugfixes use ``feature_name_regex`` and ``bugfix_name_regex`` respectively"
+    if you want to provide different conventions for features and bugfixes, use ``feature_name_regex`` and ``bugfix_name_regex`` respectively"
 	"``no_dead_releases``","release branches that are not closed may create a mess in the repository and breaks the master/main 
     branch - releases must be closed as soon as they are deployed to production environment (or just before, 
     depending on your case)
