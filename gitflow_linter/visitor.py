@@ -208,6 +208,50 @@ class MainCommitsAreTaggedVisitor(BaseVisitor):
         return section
 
 
+class NoDirectCommitsToProtectedBranches(BaseVisitor):
+    """
+    the purposes behind develop and master are different but there is an assumption that at least those two are protected
+
+    the rule is here to check if it is really the case and both branches does not contain direct commits (commits
+    that were pushed directly)
+    """
+
+    @property
+    def rule(self) -> str:
+        return 'no_direct_commits_to_protected_branches'
+
+    def visit(self, repo: Repository, *args, **kwargs) -> Section:
+        section = Section(rule=self.rule, title='Checked if {} and {} contain only merges without direct commits'
+                          .format(self.gitflow.develop, self.gitflow.master))
+        initial_commit = next(iter(repo.raw_query(lambda git: git.log('--format=format:%s', '--reverse'))))
+
+        def _get_direct_commits(branch: str) -> List[str]:
+            merges = repo.raw_query(
+                lambda git: git.log(branch, '--merges', '--format=format:%H', '--first-parent'),
+                predicate=lambda sha: sha)
+            potential_fast_forwards = repo.raw_query(
+                lambda git: git.reflog('show', branch, '--format=format:%H'),
+                predicate=lambda sha: sha)
+            all_commits = repo.raw_query(
+                lambda git: git.log(branch, '--format=format:%H', '--first-parent'),
+                predicate=lambda sha: sha)
+            return [sha for sha in all_commits if sha not in merges and sha not in potential_fast_forwards]
+
+        def _get_issues(direct_commits: List[str], branch: str) -> List[Issue]:
+            issuers = [repo.commit(sha, branch) for sha in direct_commits]
+            issue_msg_fmt = 'Branch {} contains commit "{}" that was pushed directly rather than merged'
+            return [
+                Issue.error(issue_msg_fmt.format(branch, ' '.join([str(commit.hexsha)[:8], commit.message.strip()])))
+                for commit in issuers if commit and commit.message.lower().strip() != initial_commit.lower().strip()
+            ]
+
+        develop_results = _get_direct_commits(self.gitflow.develop)
+        master_results = _get_direct_commits(self.gitflow.master)
+        section.extend(_get_issues(direct_commits=develop_results, branch=self.gitflow.develop))
+        section.extend(_get_issues(direct_commits=master_results, branch=self.gitflow.master))
+        return section
+
+
 class VersionNamesConventionVisitor(BaseVisitor):
     __doc__ = """checks if release branches and tags follow version naming convention
     
@@ -363,6 +407,7 @@ def visitors(gitflow: Gitflow) -> List[BaseVisitor]:
         OldDevelopmentBranchesVisitor(gitflow=gitflow),
         NotScopedBranchesVisitor(gitflow=gitflow),
         MainCommitsAreTaggedVisitor(gitflow=gitflow),
+        NoDirectCommitsToProtectedBranches(gitflow=gitflow),
         VersionNamesConventionVisitor(gitflow=gitflow),
         DevBranchNamesFollowConvention(gitflow=gitflow),
         DeadReleasesVisitor(gitflow=gitflow),
