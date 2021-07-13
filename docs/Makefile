@@ -20,6 +20,7 @@ help:
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 documentation:
+	rm -rf "$(BUILDDIR)"
 	python ./generate_includes.py
 	gitflow-linter --help > help.txt
 	gitflow-linter-plugins > plugins.txt
