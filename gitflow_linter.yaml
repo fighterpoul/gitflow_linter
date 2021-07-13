@@ -14,6 +14,7 @@ rules: # mandatory, defines what needs to be validated and how
     max_days_features: 50
   no_orphan_branches:
   master_must_have_tags:
+  no_direct_commits_to_protected_branches:
   version_names_follow_convention:
     version_regex: ^\d+\.\d+(\.\d+)?$ # standard major.minor(.optional patch) convention
   dev_branch_names_follow_convention:

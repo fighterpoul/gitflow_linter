@@ -17,6 +17,10 @@ Rules
     indicator that you do something wrong and create a mess in the repo"
 	"``master_must_have_tags``","if your master branch contains commits that are not tagged, it probably means that you don't use 
     master as your releases history keeper"
+	"``no_direct_commits_to_protected_branches``","the purposes behind develop and master are different but there is an assumption that at least those two are protected
+
+    the rule is here to check if it is really the case and both branches does not contain direct commits (commits
+    that were pushed directly)"
 	"``version_names_follow_convention``","checks if release branches and tags follow version naming convention
     
     the convention must be specified in ``version_regex`` argument as a regular expression string"

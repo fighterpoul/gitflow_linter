@@ -1,5 +1,6 @@
 import os
 from abc import ABC, abstractmethod
+from typing import Optional
 
 from git import Repo, Remote, RemoteReference, Commit, Head
 from git.util import IterableList
@@ -93,6 +94,12 @@ class Repository:
         return [line.strip() if not map_line else map_line(line.strip())
                 for line in query(self.repo.git).split(os.linesep)
                 if predicate is None or predicate(line)]
+
+    def commit(self, sha: str, branch_name: str) -> Optional[Commit]:
+        branch = self.branch(branch_name)
+        if branch:
+            return next(iter([commit for commit in list(self.repo.iter_commits(branch.name, max_count=1000)) if commit.hexsha == sha]), None)
+        return None
 
     def apply(self, visitor, *args, **kwargs):
         return visitor.visit(self, *args, **kwargs)
