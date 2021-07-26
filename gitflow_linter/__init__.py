@@ -57,8 +57,8 @@ def main(git_directory, settings, out, fetch, allow_dirty, fatal_warnings):
                 section: Section = repo.apply(visitor, **kwargs if kwargs else {})
                 if section is not None:
                     if kwargs and kwargs.get('severity', None):
-                        if kwargs['severity'] in list(Level):
-                            section.change_severity(to=Level(kwargs['severity']))
+                        if kwargs['severity'].lower() in list(Level):
+                            section.change_severity(to=Level(kwargs['severity'].lower()))
                         else:
                             output.log.warning('Provided severity "{}" is not recognized. Allowed values: [{}]'.format(
                                 kwargs['severity'], ', '.join(list(Level))))

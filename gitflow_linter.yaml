@@ -15,7 +15,6 @@ rules: # mandatory, defines what needs to be validated and how
   no_orphan_branches:
   master_must_have_tags:
   no_direct_commits_to_protected_branches:
-    severity: warning
   version_names_follow_convention:
     version_regex: ^\d+\.\d+(\.\d+)?$ # standard major.minor(.optional patch) convention
   dev_branch_names_follow_convention:
