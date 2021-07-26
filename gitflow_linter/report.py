@@ -90,6 +90,10 @@ class Section:
     def contains_warns(self) -> bool:
         return len([issue for issue in self.issues if issue.level is Level.WARNING]) > 0
 
+    def change_severity(self, to: Level):
+        for issue in self.issues:
+            issue.level = to
+
     def __repr__(self):
         return "Section(rule={rule}, title='{title}')".format(rule=self.rule, title=self.title)
 
