@@ -46,6 +46,11 @@ To verify if a plugin is properly installed and recognized you can run ``gitflow
 
 .. literalinclude:: plugins.txt
 
+Example
+-------
+
+Exploring official plugin `gitflow_authors_linter <https://github.com/fighterpoul/gitflow_authors_linter>`__ seems like a good starting point.
+
 API Reference
 -------------
 

@@ -36,9 +36,11 @@ def _validate_settings(value, working_dir):
                                                                                 "checking")
 @click.option('-d', '--allow-dirty', is_flag=True, default=False, help="Linter will ignore the fact that the given "
                                                                        "repo is considered dirty")
-def main(git_directory, settings, out, fetch, allow_dirty):
+@click.option('-w', '--fatal-warnings', is_flag=True, default=False, help="Returned code will be 1 anyway, even if "
+                                                                          "there are warnings but no errors")
+def main(git_directory, settings, out, fetch, allow_dirty, fatal_warnings):
     """Evaluate given repository and check if gitflow is respected"""
-    from gitflow_linter.report import Report, Section, Issue
+    from gitflow_linter.report import Report, Section, Issue, Level
     from gitflow_linter.visitor import StatsRepositoryVisitor
     from gitflow_linter.repository import Repository
 
@@ -54,6 +56,12 @@ def main(git_directory, settings, out, fetch, allow_dirty):
                 kwargs = rules.args_for(visitor.rule)
                 section: Section = repo.apply(visitor, **kwargs if kwargs else {})
                 if section is not None:
+                    if kwargs and kwargs.get('severity', None):
+                        if kwargs['severity'].lower() in list(Level):
+                            section.change_severity(to=Level(kwargs['severity'].lower()))
+                        else:
+                            output.log.warning('Provided severity "{}" is not recognized. Allowed values: [{}]'.format(
+                                kwargs['severity'], ', '.join(list(Level))))
                     report.append(section)
                 else:
                     output.log.warning('⚠️ Rule {} checked but result was not returned'.format(visitor.rule))
@@ -68,7 +76,7 @@ def main(git_directory, settings, out, fetch, allow_dirty):
             output.log.warning('Some of rules cannot be validated because corresponding validators could not be found: '
                                + ', '.join(rules.rules))
         output.create_output(out)(report)
-        return sys.exit(1 if report.contains_errors(are_warnings_errors=False) else 0)
+        return sys.exit(1 if report.contains_errors(are_warnings_errors=fatal_warnings) else 0)
     except BaseException as err:
         output.log.error(err)
         return sys.exit(1)
