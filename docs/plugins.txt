@@ -1,2 +1,3 @@
 Available gitflow-linter plugins:
-No plugins found.
+- gitflow_authors_linter handles following rules: 
+	* no_multiple_open_features_per_author

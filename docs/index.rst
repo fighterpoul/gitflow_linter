@@ -13,6 +13,7 @@ Welcome to gitflow-linter's documentation!
    quickstart
    settings
    rules
+   severity
    results
    plugins
 

@@ -40,4 +40,5 @@ You can change it by providing a desired output
 
 Then you should see in the console something that contains the same data as above but might be further processed.
 
-Either way, in case of any issues the exit code will be 1. If repo is all good then 0 is returned.
+Either way, in case of any issues with ``error`` severity the exit code will be 1. If repo is all good then 0 is returned. You can change that by providing ``-w`` (or ``--fatal-warnings``) flag to return 1 if there are warnings but no errors.
+See :ref:`severity section<Severity>` for more info.

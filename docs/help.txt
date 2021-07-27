@@ -9,4 +9,7 @@ Options:
   -d, --allow-dirty            Linter will ignore the fact that the given repo
                                is considered dirty
 
+  -w, --fatal-warnings         Returned code will be 1 anyway, even if there
+                               are warnings but no errors
+
   --help                       Show this message and exit.

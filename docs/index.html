@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>gitflow_linter 0.0.3 documentation</title>
+    <title>gitflow_linter 0.0.5 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
@@ -20,8 +20,8 @@
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
-        <li class="nav-item nav-item-0"><a href="#">gitflow_linter 0.0.3 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">gitflow_linter 0.0.3 documentation</a></li> 
+        <li class="nav-item nav-item-0"><a href="#">gitflow_linter 0.0.5 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">gitflow_linter 0.0.5 documentation</a></li> 
       </ul>
     </div>  
 
@@ -59,7 +59,7 @@
 </ul>
 <pre class="literal-block">git clone <a class="reference external" href="https://github.com/fighterpoul/gitflow_linter.git">https://github.com/fighterpoul/gitflow_linter.git</a>
 cd gitflow_linter
-git checkout 0.0.3
+git checkout 0.0.5
 python setup.py install</pre>
 </section>
 <section id="usages">
@@ -74,6 +74,9 @@ python setup.py install</pre>
 <span class="go">  -p, --fetch-prune            Linter will refresh the repo before checking</span>
 <span class="go">  -d, --allow-dirty            Linter will ignore the fact that the given repo</span>
 <span class="go">                               is considered dirty</span>
+
+<span class="go">  -w, --fatal-warnings         Returned code will be 1 anyway, even if there</span>
+<span class="go">                               are warnings but no errors</span>
 
 <span class="go">  --help                       Show this message and exit.</span>
 </pre></div>
@@ -200,6 +203,38 @@ may result in ugly issues during code review and merge mistakes</p>
 </tbody>
 </table>
 </section>
+<span id="document-severity"></span><section id="severity">
+<h2>Severity<a class="headerlink" href="#severity" title="Permalink to this headline">¶</a></h2>
+<p>Each rule (even a custom one handled by a <a class="reference internal" href="index.html#plugins"><span class="std std-ref">plugin</span></a>) might be optionally configured by using <code class="docutils literal notranslate"><span class="pre">severity</span></code> option:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">rules</span><span class="p">:</span>
+  <span class="nt">a_rule</span><span class="p">:</span>
+    <span class="nt">severity</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">info</span>
+</pre></div>
+</div>
+<p>If provided, level of <strong>all</strong> detected issues for a rule will be changed, according to provided value.</p>
+<p>Provided severity value must correspond to one of <code class="docutils literal notranslate"><span class="pre">Level</span></code> enum cases:</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="gitflow_linter.report.Level">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">gitflow_linter.report.</span></span><span class="sig-name descname"><span class="pre">Level</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.report.Level" title="Permalink to this definition">¶</a></dt>
+<dd><p>An enumeration.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gitflow_linter.report.Level.ERROR">
+<span class="sig-name descname"><span class="pre">ERROR</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'error'</span></em><a class="headerlink" href="#gitflow_linter.report.Level.ERROR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gitflow_linter.report.Level.INFO">
+<span class="sig-name descname"><span class="pre">INFO</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'info'</span></em><a class="headerlink" href="#gitflow_linter.report.Level.INFO" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gitflow_linter.report.Level.WARNING">
+<span class="sig-name descname"><span class="pre">WARNING</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'warning'</span></em><a class="headerlink" href="#gitflow_linter.report.Level.WARNING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
 <span id="document-results"></span><section id="results">
 <h2>Results<a class="headerlink" href="#results" title="Permalink to this headline">¶</a></h2>
 <p>By default once job is done a report is printed as a text in a human readable form:</p>
@@ -234,7 +269,8 @@ may result in ugly issues during code review and merge mistakes</p>
 <p>You can change it by providing a desired output</p>
 <pre class="literal-block">gitflow-linter /path/to/git/repository --output=json &gt;&gt; results.json</pre>
 <p>Then you should see in the console something that contains the same data as above but might be further processed.</p>
-<p>Either way, in case of any issues the exit code will be 1. If repo is all good then 0 is returned.</p>
+<p>Either way, in case of any issues with <code class="docutils literal notranslate"><span class="pre">error</span></code> severity the exit code will be 1. If repo is all good then 0 is returned. You can change that by providing <code class="docutils literal notranslate"><span class="pre">-w</span></code> (or <code class="docutils literal notranslate"><span class="pre">--fatal-warnings</span></code>) flag to return 1 if there are warnings but no errors.
+See <a class="reference internal" href="index.html#severity"><span class="std std-ref">severity section</span></a> for more info.</p>
 </section>
 <span id="document-plugins"></span><section id="plugins">
 <h2>Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline">¶</a></h2>
@@ -277,9 +313,14 @@ Plugin is just a list of visitors that are subscribed to check corresponding rul
 </div>
 <p>To verify if a plugin is properly installed and recognized you can run <code class="docutils literal notranslate"><span class="pre">gitflow-linter-plugins</span></code></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Available</span> <span class="n">gitflow</span><span class="o">-</span><span class="n">linter</span> <span class="n">plugins</span><span class="p">:</span>
-<span class="n">No</span> <span class="n">plugins</span> <span class="n">found</span><span class="o">.</span>
+<span class="o">-</span> <span class="n">gitflow_authors_linter</span> <span class="n">handles</span> <span class="n">following</span> <span class="n">rules</span><span class="p">:</span> 
+	<span class="o">*</span> <span class="n">no_multiple_open_features_per_author</span>
 </pre></div>
 </div>
+</section>
+<section id="example">
+<h3>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
+<p>Exploring official plugin <a class="reference external" href="https://github.com/fighterpoul/gitflow_authors_linter">gitflow_authors_linter</a> seems like a good starting point.</p>
 </section>
 <section id="api-reference">
 <h3>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h3>
@@ -397,7 +438,7 @@ Results are represented by list of <a class="reference internal" href="#gitflow_
 
 <dl class="py class">
 <dt class="sig sig-object py" id="gitflow_linter.report.Issue">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">gitflow_linter.report.</span></span><span class="sig-name descname"><span class="pre">Issue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">gitflow_linter.report.Level</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.report.Issue" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">gitflow_linter.report.</span></span><span class="sig-name descname"><span class="pre">Issue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="index.html#gitflow_linter.report.Level" title="gitflow_linter.report.Level"><span class="pre">gitflow_linter.report.Level</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.report.Issue" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="py method">
 <dt class="sig sig-object py" id="gitflow_linter.report.Issue.error">
 <em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.report.Issue.error" title="Permalink to this definition">¶</a></dt>
@@ -436,6 +477,7 @@ Results are represented by list of <a class="reference internal" href="#gitflow_
 <li class="toctree-l1"><a class="reference internal" href="index.html#document-quickstart">Quick Start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="index.html#document-settings">Settings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="index.html#document-rules">Rules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html#document-severity">Severity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="index.html#document-results">Results</a></li>
 <li class="toctree-l1"><a class="reference internal" href="index.html#document-plugins">Plugins</a></li>
 </ul>
@@ -447,8 +489,8 @@ Results are represented by list of <a class="reference internal" href="#gitflow_
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
-        <li class="nav-item nav-item-0"><a href="#">gitflow_linter 0.0.3 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">gitflow_linter 0.0.3 documentation</a></li> 
+        <li class="nav-item nav-item-0"><a href="#">gitflow_linter 0.0.5 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">gitflow_linter 0.0.5 documentation</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
