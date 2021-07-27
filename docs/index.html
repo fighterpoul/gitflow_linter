@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>gitflow_linter 0.0.4 documentation</title>
+    <title>gitflow_linter 0.0.5 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/nature.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
@@ -20,8 +20,8 @@
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
-        <li class="nav-item nav-item-0"><a href="#">gitflow_linter 0.0.4 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">gitflow_linter 0.0.4 documentation</a></li> 
+        <li class="nav-item nav-item-0"><a href="#">gitflow_linter 0.0.5 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">gitflow_linter 0.0.5 documentation</a></li> 
       </ul>
     </div>  
 
@@ -59,7 +59,7 @@
 </ul>
 <pre class="literal-block">git clone <a class="reference external" href="https://github.com/fighterpoul/gitflow_linter.git">https://github.com/fighterpoul/gitflow_linter.git</a>
 cd gitflow_linter
-git checkout 0.0.4
+git checkout 0.0.5
 python setup.py install</pre>
 </section>
 <section id="usages">
@@ -126,7 +126,6 @@ python setup.py install</pre>
   <span class="nt">no_orphan_branches</span><span class="p">:</span>
   <span class="nt">master_must_have_tags</span><span class="p">:</span>
   <span class="nt">no_direct_commits_to_protected_branches</span><span class="p">:</span>
-    <span class="nt">severity</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">WARNING</span>
   <span class="nt">version_names_follow_convention</span><span class="p">:</span>
     <span class="nt">version_regex</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">^\d+\.\d+(\.\d+)?$</span> <span class="c1"># standard major.minor(.optional patch) convention</span>
   <span class="nt">dev_branch_names_follow_convention</span><span class="p">:</span>
@@ -206,7 +205,7 @@ may result in ugly issues during code review and merge mistakes</p>
 </section>
 <span id="document-severity"></span><section id="severity">
 <h2>Severity<a class="headerlink" href="#severity" title="Permalink to this headline">¶</a></h2>
-<p>Each rule (even a custom one handled by a plugin) might be optionally configured by using <code class="docutils literal notranslate"><span class="pre">severity</span></code> option:</p>
+<p>Each rule (even a custom one handled by a <a class="reference internal" href="index.html#plugins"><span class="std std-ref">plugin</span></a>) might be optionally configured by using <code class="docutils literal notranslate"><span class="pre">severity</span></code> option:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">rules</span><span class="p">:</span>
   <span class="nt">a_rule</span><span class="p">:</span>
     <span class="nt">severity</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">info</span>
@@ -270,7 +269,8 @@ may result in ugly issues during code review and merge mistakes</p>
 <p>You can change it by providing a desired output</p>
 <pre class="literal-block">gitflow-linter /path/to/git/repository --output=json &gt;&gt; results.json</pre>
 <p>Then you should see in the console something that contains the same data as above but might be further processed.</p>
-<p>Either way, in case of any issues the exit code will be 1. If repo is all good then 0 is returned.</p>
+<p>Either way, in case of any issues with <code class="docutils literal notranslate"><span class="pre">error</span></code> severity the exit code will be 1. If repo is all good then 0 is returned. You can change that by providing <code class="docutils literal notranslate"><span class="pre">-w</span></code> (or <code class="docutils literal notranslate"><span class="pre">--fatal-warnings</span></code>) flag to return 1 if there are warnings but no errors.
+See <a class="reference internal" href="index.html#severity"><span class="std std-ref">severity section</span></a> for more info.</p>
 </section>
 <span id="document-plugins"></span><section id="plugins">
 <h2>Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline">¶</a></h2>
@@ -489,8 +489,8 @@ Results are represented by list of <a class="reference internal" href="#gitflow_
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
-        <li class="nav-item nav-item-0"><a href="#">gitflow_linter 0.0.4 documentation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">gitflow_linter 0.0.4 documentation</a></li> 
+        <li class="nav-item nav-item-0"><a href="#">gitflow_linter 0.0.5 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">gitflow_linter 0.0.5 documentation</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
