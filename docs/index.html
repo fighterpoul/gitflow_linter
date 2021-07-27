@@ -205,7 +205,7 @@ may result in ugly issues during code review and merge mistakes</p>
 </section>
 <span id="document-severity"></span><section id="severity">
 <h2>Severity<a class="headerlink" href="#severity" title="Permalink to this headline">¶</a></h2>
-<p>Each rule (even a custom one handled by a plugin) might be optionally configured by using <code class="docutils literal notranslate"><span class="pre">severity</span></code> option:</p>
+<p>Each rule (even a custom one handled by a <a class="reference internal" href="index.html#plugins"><span class="std std-ref">plugin</span></a>) might be optionally configured by using <code class="docutils literal notranslate"><span class="pre">severity</span></code> option:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">rules</span><span class="p">:</span>
   <span class="nt">a_rule</span><span class="p">:</span>
     <span class="nt">severity</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">info</span>
@@ -269,7 +269,8 @@ may result in ugly issues during code review and merge mistakes</p>
 <p>You can change it by providing a desired output</p>
 <pre class="literal-block">gitflow-linter /path/to/git/repository --output=json &gt;&gt; results.json</pre>
 <p>Then you should see in the console something that contains the same data as above but might be further processed.</p>
-<p>Either way, in case of any issues the exit code will be 1. If repo is all good then 0 is returned.</p>
+<p>Either way, in case of any issues with <code class="docutils literal notranslate"><span class="pre">error</span></code> severity the exit code will be 1. If repo is all good then 0 is returned. You can change that by providing <code class="docutils literal notranslate"><span class="pre">-w</span></code> (or <code class="docutils literal notranslate"><span class="pre">--fatal-warnings</span></code>) flag to return 1 if there are warnings but no errors.
+See <a class="reference internal" href="index.html#severity"><span class="std std-ref">severity section</span></a> for more info.</p>
 </section>
 <span id="document-plugins"></span><section id="plugins">
 <h2>Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline">¶</a></h2>

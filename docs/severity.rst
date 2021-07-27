@@ -1,7 +1,7 @@
 Severity
 --------
 
-Each rule (even a custom one handled by a plugin) might be optionally configured by using ``severity`` option:
+Each rule (even a custom one handled by a :ref:`plugin<Plugins>`) might be optionally configured by using ``severity`` option:
 
 .. code-block:: yaml
 
