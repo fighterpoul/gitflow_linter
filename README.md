@@ -35,7 +35,7 @@ pip install gitflow-linter
 ```
 git clone [https://github.com/fighterpoul/gitflow_linter.git](https://github.com/fighterpoul/gitflow_linter.git)
 cd gitflow_linter
-git checkout 0.0.5
+git checkout 0.0.6
 python setup.py install
 ```
 
@@ -68,18 +68,8 @@ gitflow-linter /path/to/git/repository
 **WARNING**: URL to a remote is not supported. Passing [https://github.com/fighterpoul/gitflow_linter.git](https://github.com/fighterpoul/gitflow_linter.git) as the argument will fail.
 
 **HINT**: Run `git fetch --prune` before to make the repo clean and clear
+**HINT**: In some cases it might be usefull to pull master and develop firstly, before running the linter: `git checkout master && git checkout develop`
 
 # Documentation
 
 A bit more detailed documentation can be found here: [https://fighterpoul.github.io/gitflow_linter/](https://fighterpoul.github.io/gitflow_linter/)
-
-# License
-
-The MIT License (MIT)
-Copyright © 2021 Paweł Walczak
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

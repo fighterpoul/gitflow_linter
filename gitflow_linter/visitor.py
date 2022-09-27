@@ -124,11 +124,11 @@ class OldDevelopmentBranchesVisitor(BaseVisitor):
 
         def _check_for_issues(branches: IterableList, name: str):
             for branch in branches:
-                if deadline > branch.commit.authored_datetime.replace(tzinfo=None) \
+                if deadline > branch.commit.committed_datetime.replace(tzinfo=None) \
                         and branch.name not in merged_branches:
                     section.append(Issue.error(
                         '{} {} has not been touched since {}'.format(name, branch.name,
-                                                                     branch.commit.authored_datetime)))
+                                                                     branch.commit.committed_datetime)))
 
         _check_for_issues(branches=repo.branches(folder=self.gitflow.features), name='Feature')
         _check_for_issues(branches=repo.branches(folder=self.gitflow.fixes), name='Fix')
@@ -241,14 +241,17 @@ class NoDirectCommitsToProtectedBranches(BaseVisitor):
             issuers = [repo.commit(sha, branch) for sha in direct_commits]
             issue_msg_fmt = 'Branch {} contains commit "{}" that was pushed directly rather than merged'
             return [
-                Issue.error(issue_msg_fmt.format(branch, ' '.join([str(commit.hexsha)[:8], commit.message.strip()])))
+                Issue.error(issue_msg_fmt.format(branch, ' '.join([str(commit.hexsha)[:8], commit.summary.strip()])))
                 for commit in issuers if commit and commit.message.lower().strip() != initial_commit.lower().strip()
             ]
+        
+        dev_branch = '/'.join([repo.remote.name, self.gitflow.develop])
+        main_branch = '/'.join([repo.remote.name, self.gitflow.master])
 
-        develop_results = _get_direct_commits(self.gitflow.develop)
-        master_results = _get_direct_commits(self.gitflow.master)
-        section.extend(_get_issues(direct_commits=develop_results, branch=self.gitflow.develop))
-        section.extend(_get_issues(direct_commits=master_results, branch=self.gitflow.master))
+        develop_results = _get_direct_commits(dev_branch)
+        master_results = _get_direct_commits(main_branch)
+        section.extend(_get_issues(direct_commits=develop_results, branch=dev_branch))
+        section.extend(_get_issues(direct_commits=master_results, branch=main_branch))
         return section
 
 
@@ -341,21 +344,40 @@ class DeadReleasesVisitor(BaseVisitor):
         section = Section(rule=self.rule, title='Checked if repo contains abandoned and not removed releases')
         deadline = datetime.now() - timedelta(days=kwargs['deadline_to_close_release'])
         main_branch = '/'.join([repo.remote.name, self.gitflow.master])
+        dev_branch = '/'.join([repo.remote.name, self.gitflow.develop])
         release_branch = '/'.join([repo.remote.name, self.gitflow.releases, ''])
         hotfix_branch = '/'.format([repo.remote.name, self.gitflow.hotfixes, ''])
 
-        potential_dead_releases = repo.raw_query(lambda git: git.branch('-r', '--no-merged', main_branch),
+        releases_not_merged_to_main = repo.raw_query(lambda git: git.branch('-r', '--no-merged', main_branch),
                                                  predicate=lambda release: release.strip().startswith(
                                                      release_branch) or release.strip().startswith(
                                                      hotfix_branch),
                                                  map_line=lambda release: repo.branch(release))
-        dead_releases = [dead_release for dead_release in potential_dead_releases if
-                         deadline > dead_release.commit.authored_datetime.replace(tzinfo=None)]
+        releases_not_merged_to_develop = repo.raw_query(lambda git: git.branch('-r', '--no-merged', dev_branch),
+                                                 predicate=lambda release: release.strip().startswith(
+                                                     release_branch) or release.strip().startswith(
+                                                     hotfix_branch),
+                                                 map_line=lambda release: repo.branch(release))
 
-        section.extend([Issue.error(
-            '{release} seems abandoned - it has never been merged into the master branch'.format(release=r.name)) for r
-            in
-            dead_releases])
+        potential_dead_releases = [release for release in releases_not_merged_to_main if release in releases_not_merged_to_develop]
+        
+        releases_merged_only_into_develop = [release for release in releases_not_merged_to_main if release not in releases_not_merged_to_develop]
+
+        dead_releases = [dead_release for dead_release in potential_dead_releases if
+                         deadline > dead_release.commit.committed_datetime.replace(tzinfo=None)]
+
+        suspicious_releases = [suspicious_release for suspicious_release in releases_merged_only_into_develop 
+                            if deadline > suspicious_release.commit.committed_datetime.replace(tzinfo=None)]
+
+        section.extend([
+            Issue.error('{release} seems abandoned - it has never been merged into the {master} branch'.format(release=r.name, master=self.gitflow.master)) 
+            for r in dead_releases
+        ])
+
+        section.extend([
+            Issue.warning(description='{release} has been merged back into {develop} but never into {master}'.format(release=r.name, develop=self.gitflow.develop, master=self.gitflow.master))
+            for r in suspicious_releases
+        ])
 
         return section
 
@@ -377,9 +399,9 @@ class DependantFeaturesVisitor(BaseVisitor):
         dev_branch = '/'.join([repo.remote.name, self.gitflow.develop])
         max_dependant_branches = int(kwargs['max_dependant_branches'])
         merged_branches = repo.raw_query(lambda git: git.branch('-r', '--merged', self.gitflow.develop))
-        not_merged = [repo.branch(b.name) for b in repo.branches(self.gitflow.features) if
-                      b.name not in merged_branches]
-        branch_issue_format = '{} seems to depend on other feature branches. It contains following merges: ' + os.linesep + '{}'
+        not_merged = [repo.branch(b.name) for b in repo.branches(self.gitflow.features) if b.name not in merged_branches] + [repo.branch(b.name) for b in repo.branches(self.gitflow.fixes) if b.name not in merged_branches]
+        branch_issue_format = '{} seems to depend on other feature branches. It contains following merges: {}'
+        problematic_branch_sep = os.linesep + '\t\t\t- '
 
         for feature in not_merged:
             name = feature.name
@@ -395,8 +417,31 @@ class DependantFeaturesVisitor(BaseVisitor):
                 is_limit_exceeded = len(branch_issues) > max_dependant_branches
                 issue_level = Level.ERROR if is_limit_exceeded else Level.WARNING
                 issues_titles = [next(iter(commit.message.split(os.linesep)), None) for commit in branch_issues]
-                issue_desc = branch_issue_format.format(name, os.linesep.join(issues_titles))
+                issue_desc = branch_issue_format.format(name, problematic_branch_sep + problematic_branch_sep.join(issues_titles))
                 section.append(Issue(level=issue_level, description=issue_desc))
+
+        # chained features or features that share commits
+        commits_in_ft_branches = dict()
+        issues_in_ft_branch = dict()
+        branch_issue_format = '{} seems to depend on other feature branches. It shares commits with following branches: {}'
+        for feature in not_merged:
+            commit_hashes = repo.raw_query(lambda git: git.rev_list('--left-right','..'.join([dev_branch, feature.name])))
+            commits_in_ft_branches[feature.name] = commit_hashes
+
+        for feature in commits_in_ft_branches.keys():
+            other_dependant_ft_branches = [
+                ft for ft in commits_in_ft_branches.keys() 
+                if ft != feature and any(hash_c in commits_in_ft_branches[feature] for hash_c in commits_in_ft_branches[ft])
+            ]
+            if other_dependant_ft_branches:
+                issues_in_ft_branch[feature] = other_dependant_ft_branches
+        
+        for feature in issues_in_ft_branch.keys():
+            is_limit_exceeded = len(issues_in_ft_branch[feature]) > max_dependant_branches
+            issue_level = Level.ERROR if is_limit_exceeded else Level.WARNING
+            dependant_branches = problematic_branch_sep + problematic_branch_sep.join(issues_in_ft_branch[feature])
+            issue_desc = branch_issue_format.format(feature, dependant_branches)
+            section.append(Issue(level=issue_level, description=issue_desc))
 
         return section
 
