@@ -68,6 +68,7 @@ gitflow-linter /path/to/git/repository
 **WARNING**: URL to a remote is not supported. Passing [https://github.com/fighterpoul/gitflow_linter.git](https://github.com/fighterpoul/gitflow_linter.git) as the argument will fail.
 
 **HINT**: Run `git fetch --prune` before to make the repo clean and clear
+**HINT**: In some cases it might be usefull to pull master and develop firstly, before running the linter: `git checkout master && git checkout develop`
 
 # Documentation
 
