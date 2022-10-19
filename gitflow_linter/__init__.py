@@ -12,7 +12,7 @@ from gitflow_linter import output
 from gitflow_linter.rules import RulesContainer, Gitflow
 
 DEFAULT_LINTER_OPTIONS = 'gitflow_linter.yaml'
-__version__ = '0.0.6'
+__version__ = '0.1.0'
 
 
 def _validate_settings(value, working_dir):
