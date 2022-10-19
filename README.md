@@ -35,7 +35,7 @@ pip install gitflow-linter
 ```
 git clone [https://github.com/fighterpoul/gitflow_linter.git](https://github.com/fighterpoul/gitflow_linter.git)
 cd gitflow_linter
-git checkout 0.0.6
+git checkout 0.1.0
 python setup.py install
 ```
 
@@ -55,6 +55,12 @@ Options:
 
   -w, --fatal-warnings         Returned code will be 1 anyway, even if there
                                are warnings but no errors
+
+  -F, --date-from [%Y-%m-%d]   Issues introduced before this date will be
+                               ignored.
+
+  -T, --date-to [%Y-%m-%d]     Issues introduced after this date will be
+                               ignored.
 
   --help                       Show this message and exit.
 ```

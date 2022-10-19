@@ -126,9 +126,8 @@ class OldDevelopmentBranchesVisitor(BaseVisitor):
             for branch in branches:
                 if deadline > branch.commit.committed_datetime.replace(tzinfo=None) \
                         and branch.name not in merged_branches:
-                    section.append(Issue.error(
-                        '{} {} has not been touched since {}'.format(name, branch.name,
-                                                                     branch.commit.committed_datetime)))
+                    description = '{} {} has not been touched since {}'.format(name, branch.name, branch.commit.committed_datetime)
+                    section.append(Issue.error(description, obj=branch))
 
         _check_for_issues(branches=repo.branches(folder=self.gitflow.features), name='Feature')
         _check_for_issues(branches=repo.branches(folder=self.gitflow.fixes), name='Fix')
@@ -173,7 +172,7 @@ class NotScopedBranchesVisitor(BaseVisitor):
 
         orphan_branches = [branch for branch in repo.branches() if not has_expected_prefix(branch=branch)]
         for branch in orphan_branches:
-            section.append(Issue.error('{branch} looks like created out of expected scopes'.format(branch=branch.name)))
+            section.append(Issue.error('{branch} looks like created out of expected scopes'.format(branch=branch.name), obj=branch))
 
         return section
 
@@ -198,8 +197,9 @@ class MainCommitsAreTaggedVisitor(BaseVisitor):
         main_commits_not_tagged = [commit for commit in main_commits if commit not in tags_sha]
 
         for main_commit_not_tagged in main_commits_not_tagged:
+            object = next(iter([tag for tag in tags if tag.commit.hexsha.startswith(main_commit_not_tagged)]))
             section.append(Issue.error('{commit} commit in main branch is not tagged'
-                                       .format(commit=main_commit_not_tagged[:8])))
+                                       .format(commit=main_commit_not_tagged[:8]), obj=object))
 
         for tag_not_on_main in tags_not_on_main_branch:
             section.append(Issue.warning('{commit} commit contains a tag but is not a part of the master branch'
@@ -241,7 +241,7 @@ class NoDirectCommitsToProtectedBranches(BaseVisitor):
             issuers = [repo.commit(sha, branch) for sha in direct_commits]
             issue_msg_fmt = 'Branch {} contains commit "{}" that was pushed directly rather than merged'
             return [
-                Issue.error(issue_msg_fmt.format(branch, ' '.join([str(commit.hexsha)[:8], commit.summary.strip()])))
+                Issue.error(issue_msg_fmt.format(branch, ' '.join([str(commit.hexsha)[:8], commit.summary.strip()])), obj=commit)
                 for commit in issuers if commit and commit.message.lower().strip() != initial_commit.lower().strip()
             ]
         
@@ -268,21 +268,21 @@ class VersionNamesConventionVisitor(BaseVisitor):
     def visit(self, repo: Repository, *args, **kwargs) -> Section:
         import re
         section = Section(rule=self.rule, title='Checked if version names follow given convention')
-        releases = [branch.name for branch in repo.branches(self.gitflow.releases)]
-        tags = [tag.name for tag in repo.repo.tags]
+        releases = [branch for branch in repo.branches(self.gitflow.releases)]
+        tags = [tag for tag in repo.repo.tags]
         version_reg = kwargs['version_regex']
 
         def _validate_version(v: str) -> bool:
             return re.search(version_reg, v) is not None
 
-        release_issues = [release for release in releases if not _validate_version(release.split('/')[-1])]
-        tags_issues = [tag for tag in tags if not _validate_version(tag)]
+        release_issues = [release for release in releases if not _validate_version(release.name.split('/')[-1])]
+        tags_issues = [tag for tag in tags if not _validate_version(tag.name)]
 
         section.extend(
-            [Issue.error('Release {branch} does not follow name convention'.format(branch=release)) for release in
+            [Issue.error('Release {branch} does not follow name convention'.format(branch=release.name), obj=release) for release in
              release_issues])
         section.extend(
-            [Issue.error('Tag {tag} does not follow name convention'.format(tag=tag)) for tag in tags_issues])
+            [Issue.error('Tag {tag} does not follow name convention'.format(tag=tag.name), obj=tag) for tag in tags_issues])
 
         return section
 
@@ -315,13 +315,13 @@ class DevBranchNamesFollowConvention(BaseVisitor):
         def _is_valid(branch: str, regex: str) -> bool:
             return re.search(regex, branch) is not None
 
-        feature_issuers = [feature.name for feature in repo.branches(self.gitflow.features) if
+        feature_issuers = [feature for feature in repo.branches(self.gitflow.features) if
                            not _is_valid(branch=feature.name.replace(feature_prefix, ''), regex=features_regex)]
-        bugfix_issuers = [bugfix.name for bugfix in repo.branches(self.gitflow.fixes) if
+        bugfix_issuers = [bugfix for bugfix in repo.branches(self.gitflow.fixes) if
                           not _is_valid(branch=bugfix.name.replace(bugfix_prefix, ''), regex=bugfixes_regex)]
 
         issue_msg_fmt = '{branch} branch does not follow given convention'
-        issues = [Issue.error(issue_msg_fmt.format(branch=branch)) for branch in (feature_issuers + bugfix_issuers)]
+        issues = [Issue.error(issue_msg_fmt.format(branch=branch.name), obj=branch) for branch in (feature_issuers + bugfix_issuers)]
 
         return Section(rule=self.rule, title='Checked if feature and bugfix names follow convention', issues=issues)
 
@@ -370,12 +370,12 @@ class DeadReleasesVisitor(BaseVisitor):
                             if deadline > suspicious_release.commit.committed_datetime.replace(tzinfo=None)]
 
         section.extend([
-            Issue.error('{release} seems abandoned - it has never been merged into the {master} branch'.format(release=r.name, master=self.gitflow.master)) 
+            Issue.error('{release} seems abandoned - it has never been merged into the {master} branch'.format(release=r.name, master=self.gitflow.master), obj=r) 
             for r in dead_releases
         ])
 
         section.extend([
-            Issue.warning(description='{release} has been merged back into {develop} but never into {master}'.format(release=r.name, develop=self.gitflow.develop, master=self.gitflow.master))
+            Issue.warning(description='{release} has been merged back into {develop} but never into {master}'.format(release=r.name, develop=self.gitflow.develop, master=self.gitflow.master), obj=r)
             for r in suspicious_releases
         ])
 
@@ -418,7 +418,7 @@ class DependantFeaturesVisitor(BaseVisitor):
                 issue_level = Level.ERROR if is_limit_exceeded else Level.WARNING
                 issues_titles = [next(iter(commit.message.split(os.linesep)), None) for commit in branch_issues]
                 issue_desc = branch_issue_format.format(name, problematic_branch_sep + problematic_branch_sep.join(issues_titles))
-                section.append(Issue(level=issue_level, description=issue_desc))
+                section.append(Issue(level=issue_level, description=issue_desc, obj=feature))
 
         # chained features or features that share commits
         commits_in_ft_branches = dict()
@@ -426,7 +426,7 @@ class DependantFeaturesVisitor(BaseVisitor):
         branch_issue_format = '{} seems to depend on other feature branches. It shares commits with following branches: {}'
         for feature in not_merged:
             commit_hashes = repo.raw_query(lambda git: git.rev_list('--left-right','..'.join([dev_branch, feature.name])))
-            commits_in_ft_branches[feature.name] = commit_hashes
+            commits_in_ft_branches[feature] = commit_hashes
 
         for feature in commits_in_ft_branches.keys():
             other_dependant_ft_branches = [
@@ -439,9 +439,10 @@ class DependantFeaturesVisitor(BaseVisitor):
         for feature in issues_in_ft_branch.keys():
             is_limit_exceeded = len(issues_in_ft_branch[feature]) > max_dependant_branches
             issue_level = Level.ERROR if is_limit_exceeded else Level.WARNING
-            dependant_branches = problematic_branch_sep + problematic_branch_sep.join(issues_in_ft_branch[feature])
-            issue_desc = branch_issue_format.format(feature, dependant_branches)
-            section.append(Issue(level=issue_level, description=issue_desc))
+            problematic_branches_names = [b.name for b in issues_in_ft_branch[feature]]
+            dependant_branches = problematic_branch_sep + problematic_branch_sep.join(problematic_branches_names)
+            issue_desc = branch_issue_format.format(feature.name, dependant_branches)
+            section.append(Issue(level=issue_level, description=issue_desc, obj=feature))
 
         return section
 
