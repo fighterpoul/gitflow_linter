@@ -78,6 +78,12 @@ python setup.py install</pre>
 <span class="go">  -w, --fatal-warnings         Returned code will be 1 anyway, even if there</span>
 <span class="go">                               are warnings but no errors</span>
 
+<span class="go">  -F, --date-from [%Y-%m-%d]   Issues introduced before this date will be</span>
+<span class="go">                               ignored.</span>
+
+<span class="go">  -T, --date-to [%Y-%m-%d]     Issues introduced after this date will be</span>
+<span class="go">                               ignored.</span>
+
 <span class="go">  --help                       Show this message and exit.</span>
 </pre></div>
 </div>
@@ -438,23 +444,23 @@ Results are represented by list of <a class="reference internal" href="#gitflow_
 
 <dl class="py class">
 <dt class="sig sig-object py" id="gitflow_linter.report.Issue">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">gitflow_linter.report.</span></span><span class="sig-name descname"><span class="pre">Issue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="index.html#gitflow_linter.report.Level" title="gitflow_linter.report.Level"><span class="pre">gitflow_linter.report.Level</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.report.Issue" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">gitflow_linter.report.</span></span><span class="sig-name descname"><span class="pre">Issue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="index.html#gitflow_linter.report.Level" title="gitflow_linter.report.Level"><span class="pre">gitflow_linter.report.Level</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">git.refs.reference.Reference</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.report.Issue" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="py method">
 <dt class="sig sig-object py" id="gitflow_linter.report.Issue.error">
-<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.report.Issue.error" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates an <code class="docutils literal notranslate"><span class="pre">Issue</span></code> with ERROR severity</p>
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">git.refs.reference.Reference</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.report.Issue.error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates an <code class="docutils literal notranslate"><span class="pre">Issue</span></code> with ERROR severity for related git object</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gitflow_linter.report.Issue.info">
-<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.report.Issue.info" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates an <code class="docutils literal notranslate"><span class="pre">Issue</span></code> with INFO severity</p>
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">git.refs.reference.Reference</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.report.Issue.info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates an <code class="docutils literal notranslate"><span class="pre">Issue</span></code> with INFO severity for related git object</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gitflow_linter.report.Issue.warning">
-<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">warning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.report.Issue.warning" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates an <code class="docutils literal notranslate"><span class="pre">Issue</span></code> with WARNING severity</p>
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">warning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">git.refs.reference.Reference</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gitflow_linter.report.Issue.warning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates an <code class="docutils literal notranslate"><span class="pre">Issue</span></code> with WARNING severity for related git object</p>
 </dd></dl>
 
 </dd></dl>

@@ -1,5 +1,7 @@
 import sys
 import os
+from datetime import date
+from datetime import timedelta
 
 # GitPython, click, pyyaml
 import click
@@ -24,6 +26,13 @@ def _validate_settings(value, working_dir):
                                  "Please provide path to the settings by using --settings option")
     return open(potential_settings, 'r')
 
+def _validate_date_to(ctx, param, date_to):
+    date_from = ctx.params['date_from']
+    if date_from < date_to:
+        return date_to
+    else:
+        raise click.BadParameter('date_from={} is not before date_to={}'.format(date_from.date(), date_to.date()))
+
 
 @click.command()
 @click.argument('git_directory',
@@ -38,7 +47,9 @@ def _validate_settings(value, working_dir):
                                                                        "repo is considered dirty")
 @click.option('-w', '--fatal-warnings', is_flag=True, default=False, help="Returned code will be 1 anyway, even if "
                                                                           "there are warnings but no errors")
-def main(git_directory, settings, out, fetch, allow_dirty, fatal_warnings):
+@click.option('-F', '--date-from', type=click.DateTime(formats=["%Y-%m-%d"]), default=str(date.min), help="Issues introduced before this date will be ignored.")
+@click.option('-T', '--date-to', type=click.DateTime(formats=["%Y-%m-%d"]), default=str(date.today() + timedelta(days=1)), callback=_validate_date_to, help="Issues introduced after this date will be ignored.")
+def main(git_directory, settings, out, fetch, allow_dirty, fatal_warnings, date_from, date_to):
     """Evaluate given repository and check if gitflow is respected"""
     from gitflow_linter.report import Report, Section, Issue, Level
     from gitflow_linter.visitor import StatsRepositoryVisitor
@@ -75,6 +86,7 @@ def main(git_directory, settings, out, fetch, allow_dirty, fatal_warnings):
         if rules.rules:
             output.log.warning('Some of rules cannot be validated because corresponding validators could not be found: '
                                + ', '.join(rules.rules))
+        report.consider_issues_only_in_period(date_from, date_to)
         output.create_output(out)(report)
         return sys.exit(1 if report.contains_errors(are_warnings_errors=fatal_warnings) else 0)
     except BaseException as err:

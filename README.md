@@ -56,6 +56,12 @@ Options:
   -w, --fatal-warnings         Returned code will be 1 anyway, even if there
                                are warnings but no errors
 
+  -F, --date-from [%Y-%m-%d]   Issues introduced before this date will be
+                               ignored.
+
+  -T, --date-to [%Y-%m-%d]     Issues introduced after this date will be
+                               ignored.
+
   --help                       Show this message and exit.
 ```
 
